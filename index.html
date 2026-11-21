@@ -1,0 +1,1896 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>نظام إدارة وجرد المخزون الشامل</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+/* ===== CSS محلي (بدون إنترنت) ===== */
+*,::before,::after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}
+html{line-height:1.5;-webkit-text-size-adjust:100%}body{margin:0}
+h1,h2,h3,h4,h5,p{margin:0;font-size:inherit;font-weight:inherit}
+button,input,select,textarea{font-family:inherit;font-size:100%;color:inherit;margin:0}
+button{background:transparent;cursor:pointer}
+table{border-collapse:collapse}
+@keyframes pulse{50%{opacity:.5}}
+.-mx-4{margin-left:-1rem;margin-right:-1rem}
+.-right-1\.5{right:-0.375rem}
+.-top-1\.5{top:-0.375rem}
+.-translate-y-1\/2{transform:translateY(-50%)}
+.absolute{position:absolute}
+.animate-pulse{animation:pulse 2s cubic-bezier(.4,0,.6,1) infinite}
+.bg-amber-100{background-color:#fef3c7}
+.bg-amber-50\/90{background-color:rgba(255,251,235,0.9)}
+.bg-blue-100{background-color:#dbeafe}
+.bg-blue-50{background-color:#eff6ff}
+.bg-blue-600{background-color:#2563eb}
+.bg-emerald-50{background-color:#ecfdf5}
+.bg-emerald-500{background-color:#10b981}
+.bg-red-100{background-color:#fee2e2}
+.bg-red-50{background-color:#fef2f2}
+.bg-red-500{background-color:#ef4444}
+.bg-red-600{background-color:#dc2626}
+.bg-slate-100{background-color:#f1f5f9}
+.bg-slate-50{background-color:#f8fafc}
+.bg-slate-900{background-color:#0f172a}
+.bg-slate-900\/60{background-color:rgba(15,23,42,0.6)}
+.bg-white{background-color:#ffffff}
+.bg-white\/20{background-color:rgba(255,255,255,0.2)}
+.bg-white\/80{background-color:rgba(255,255,255,0.8)}
+.bg-white\/90{background-color:rgba(255,255,255,0.9)}
+.block{display:block}
+.border{border-width:1px}
+.border-amber-300{border-color:#fcd34d}
+.border-amber-300\/80{border-color:rgba(252,211,77,0.8)}
+.border-b{border-bottom-width:1px}
+.border-black\/10{border-color:rgba(0,0,0,0.1)}
+.border-black\/5{border-color:rgba(0,0,0,0.05)}
+.border-blue-200{border-color:#bfdbfe}
+.border-blue-600{border-color:#2563eb}
+.border-dashed{border-style:dashed}
+.border-emerald-200{border-color:#a7f3d0}
+.border-red-200{border-color:#fecaca}
+.border-slate-100{border-color:#f1f5f9}
+.border-slate-200{border-color:#e2e8f0}
+.border-slate-300{border-color:#cbd5e1}
+.border-t{border-top-width:1px}
+.border-transparent{border-color:transparent}
+.col-span-full{grid-column:1/-1}
+.cursor-pointer{cursor:pointer}
+.fixed{position:fixed}
+.flex{display:flex}
+.flex-1{flex:1 1 0%}
+.flex-\[2\]{flex:2 2 0%}
+.flex-col{flex-direction:column}
+.font-black{font-weight:900}
+.font-bold{font-weight:700}
+.font-extrabold{font-weight:800}
+.font-medium{font-weight:500}
+.font-mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+.font-normal{font-weight:400}
+.font-sans{font-family:'Segoe UI',Tahoma,Roboto,sans-serif}
+.font-semibold{font-weight:600}
+.gap-0\.5{gap:0.125rem}
+.gap-1{gap:0.25rem}
+.gap-1\.5{gap:0.375rem}
+.gap-2{gap:0.5rem}
+.gap-2\.5{gap:0.625rem}
+.gap-3{gap:0.75rem}
+.gap-3\.5{gap:0.875rem}
+.grid{display:grid}
+.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}
+.h-10{height:2.5rem}
+.h-14{height:3.5rem}
+.h-16{height:4rem}
+.h-2{height:0.5rem}
+.h-5{height:1.25rem}
+.h-7{height:1.75rem}
+.h-8{height:2rem}
+.h-full{height:100%}
+.hidden{display:none}
+.inset-0{inset:0}
+.items-center{align-items:center}
+.items-start{align-items:flex-start}
+.justify-between{justify-content:space-between}
+.justify-center{justify-content:center}
+.leading-none{line-height:1}
+.leading-snug{line-height:1.375}
+.leading-tight{line-height:1.25}
+.line-clamp-1{overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
+.max-h-\[90vh\]{max-height:90vh}
+.max-h-\[95vh\]{max-height:95vh}
+.max-w-7xl{max-width:80rem}
+.max-w-lg{max-width:32rem}
+.max-w-sm{max-width:24rem}
+.mb-0\.5{margin-bottom:0.125rem}
+.mb-1{margin-bottom:0.25rem}
+.mb-1\.5{margin-bottom:0.375rem}
+.mb-2{margin-bottom:0.5rem}
+.mb-2\.5{margin-bottom:0.625rem}
+.mb-3{margin-bottom:0.75rem}
+.mb-4{margin-bottom:1rem}
+.mb-5{margin-bottom:1.25rem}
+.mb-6{margin-bottom:1.5rem}
+.min-h-screen{min-height:100vh}
+.min-w-max{min-width:max-content}
+.ml-1{margin-left:0.25rem}
+.mt-1{margin-top:0.25rem}
+.mt-auto{margin-top:auto}
+.mx-auto{margin-left:auto;margin-right:auto}
+.opacity-70{opacity:.7}
+.outline-none{outline:2px solid transparent;outline-offset:2px}
+.overflow-x-auto{overflow-x:auto}
+.overflow-y-auto{overflow-y:auto}
+.p-1\.5{padding:0.375rem}
+.p-2{padding:0.5rem}
+.p-2\.5{padding:0.625rem}
+.p-3{padding:0.75rem}
+.p-3\.5{padding:0.875rem}
+.p-4{padding:1rem}
+.p-6{padding:1.5rem}
+.pb-2{padding-bottom:0.5rem}
+.pb-24{padding-bottom:6rem}
+.pb-4{padding-bottom:1rem}
+.pl-0\.5{padding-left:0.125rem}
+.pl-4{padding-left:1rem}
+.pr-1{padding-right:0.25rem}
+.pr-12{padding-right:3rem}
+.pr-2{padding-right:0.5rem}
+.pt-2{padding-top:0.5rem}
+.px-1{padding-left:0.25rem;padding-right:0.25rem}
+.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}
+.px-2{padding-left:0.5rem;padding-right:0.5rem}
+.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}
+.px-3{padding-left:0.75rem;padding-right:0.75rem}
+.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}
+.px-4{padding-left:1rem;padding-right:1rem}
+.px-5{padding-left:1.25rem;padding-right:1.25rem}
+.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}
+.py-1{padding-top:0.25rem;padding-bottom:0.25rem}
+.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}
+.py-12{padding-top:3rem;padding-bottom:3rem}
+.py-16{padding-top:4rem;padding-bottom:4rem}
+.py-2{padding-top:0.5rem;padding-bottom:0.5rem}
+.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}
+.py-3{padding-top:0.75rem;padding-bottom:0.75rem}
+.py-3\.5{padding-top:0.875rem;padding-bottom:0.875rem}
+.py-4{padding-top:1rem;padding-bottom:1rem}
+.relative{position:relative}
+.right-4{right:1rem}
+.rounded{border-radius:.25rem}
+.rounded-2xl{border-radius:1rem}
+.rounded-3xl{border-radius:1.5rem}
+.rounded-b-3xl{border-bottom-left-radius:1.5rem;border-bottom-right-radius:1.5rem}
+.rounded-full{border-radius:9999px}
+.rounded-lg{border-radius:.5rem}
+.rounded-md{border-radius:.375rem}
+.rounded-t-3xl{border-top-left-radius:1.5rem;border-top-right-radius:1.5rem}
+.rounded-xl{border-radius:.75rem}
+.shadow-2xl{box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}
+.shadow-lg{box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1)}
+.shadow-md{box-shadow:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1)}
+.shadow-sm{box-shadow:0 1px 2px 0 rgba(0,0,0,.05)}
+.sticky{position:sticky}
+.text-2xl{font-size:1.5rem;line-height:2rem}
+.text-3xl{font-size:1.875rem;line-height:2.25rem}
+.text-\[10px\]{font-size:10px}
+.text-\[11px\]{font-size:11px}
+.text-\[14px\]{font-size:14px}
+.text-amber-300{color:#fcd34d}
+.text-amber-400{color:#fbbf24}
+.text-amber-600{color:#d97706}
+.text-amber-900{color:#78350f}
+.text-amber-950{color:#451a03}
+.text-base{font-size:1rem;line-height:1.5rem}
+.text-blue-600{color:#2563eb}
+.text-blue-800{color:#1e40af}
+.text-center{text-align:center}
+.text-emerald-400{color:#34d399}
+.text-emerald-600{color:#059669}
+.text-emerald-700{color:#047857}
+.text-lg{font-size:1.125rem;line-height:1.75rem}
+.text-red-500{color:#ef4444}
+.text-red-600{color:#dc2626}
+.text-slate-400{color:#94a3b8}
+.text-slate-500{color:#64748b}
+.text-slate-600{color:#475569}
+.text-slate-700{color:#334155}
+.text-slate-800{color:#1e293b}
+.text-slate-900{color:#0f172a}
+.text-sm{font-size:.875rem;line-height:1.25rem}
+.text-white{color:#ffffff}
+.text-xl{font-size:1.25rem;line-height:1.75rem}
+.text-xs{font-size:.75rem;line-height:1rem}
+.top-0{top:0}
+.top-1\/2{top:50%}
+.transition{transition:color,background-color,border-color,box-shadow,opacity .15s}
+.transition-all{transition:all .15s cubic-bezier(.4,0,.2,1)}
+.w-10{width:2.5rem}
+.w-14{width:3.5rem}
+.w-16{width:4rem}
+.w-2{width:0.5rem}
+.w-24{width:6rem}
+.w-5{width:1.25rem}
+.w-7{width:1.75rem}
+.w-8{width:2rem}
+.w-full{width:100%}
+.whitespace-nowrap{white-space:nowrap}
+.z-30{z-index:30}
+.z-50{z-index:50}
+.space-y-2>*+*{margin-top:0.5rem}
+.space-y-3>*+*{margin-top:0.75rem}
+.space-y-4>*+*{margin-top:1rem}
+.active\:scale-95:active{transform:scale(.95)}
+.focus\:bg-white:focus{background-color:#ffffff}
+.focus\:border-blue-500:focus{border-color:#3b82f6}
+.hover\:bg-blue-100:hover{background-color:#dbeafe}
+.hover\:bg-blue-50:hover{background-color:#eff6ff}
+.hover\:bg-blue-700:hover{background-color:#1d4ed8}
+.hover\:bg-emerald-100:hover{background-color:#d1fae5}
+.hover\:bg-emerald-50:hover{background-color:#ecfdf5}
+.hover\:bg-red-100:hover{background-color:#fee2e2}
+.hover\:bg-red-50:hover{background-color:#fef2f2}
+.hover\:bg-red-700:hover{background-color:#b91c1c}
+.hover\:bg-slate-200:hover{background-color:#e2e8f0}
+.hover\:bg-slate-50:hover{background-color:#f8fafc}
+.hover\:bg-slate-800:hover{background-color:#1e293b}
+.hover\:border-slate-300:hover{border-color:#cbd5e1}
+.hover\:shadow-lg:hover{box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1)}
+.hover\:text-red-600:hover{color:#dc2626}
+@media(min-width:640px){.sm\:flex{display:flex}.sm\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.sm\:hidden{display:none}.sm\:inline{display:inline}.sm\:mx-0{margin-left:0;margin-right:0}.sm\:px-0{padding-left:0;padding-right:0}}
+@media(min-width:768px){.md\:flex-row{flex-direction:row}.md\:mb-6{margin-bottom:1.5rem}.md\:p-4{padding:1rem}.md\:p-6{padding:1.5rem}.md\:py-8{padding-top:2rem;padding-bottom:2rem}.md\:text-base{font-size:1rem;line-height:1.5rem}.md\:text-sm{font-size:.875rem;line-height:1.25rem}.md\:text-xl{font-size:1.25rem;line-height:1.75rem}.md\:w-64{width:16rem}}
+@media(min-width:1024px){.lg\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:1280px){.xl\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+    body { font-family: 'Tajawal','Segoe UI',Tahoma,'Noto Sans Arabic','Noto Naskh Arabic','Droid Arabic Naskh',Roboto,sans-serif; background-color: #f8fafc; color: #0f172a; touch-action: manipulation; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .modal-enter { animation: fadeIn 0.2s ease-out forwards; }
+    .modal-content-enter { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .unit-badge-CTN { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .unit-badge-PKT { background-color: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+    .unit-badge-PCS { background-color: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .input-field { width:100%; background:#fff; border:1px solid #cbd5e1; border-radius:12px; padding:12px 16px; color:#1e293b; outline:none; font-size:16px; }
+    .input-field:focus { border-color:#3b82f6; box-shadow:0 0 0 4px rgba(59,130,246,.2); }
+    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .card-input { font-size: 16px !important; font-weight: 800; text-align: center; border-radius: 8px; padding: 6px 4px; transition: all 0.15s ease; }
+
+    html[dir=ltr] .srch-ico{right:auto;left:1rem}
+    html[dir=ltr] .srch-inp{padding-right:1rem;padding-left:3rem}
+
+    /* ===== ورقة الوردية ===== */
+    #ssModal{display:none;position:fixed;inset:0;z-index:60;background:#f8fafc;flex-direction:column}
+    #ssModal .ss-bar{background:#fff;border-bottom:1px solid #e2e8f0;padding:10px 12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    #ssModal .ss-btn{border:0;border-radius:10px;padding:9px 11px;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit}
+    .ss-main{background:#2563eb;color:#fff}.ss-gray{background:#e2e8f0;color:#0f172a}.ss-red{background:#fee2e2;color:#b91c1c}.ss-green{background:#16a34a;color:#fff}.ss-amber{background:#fef3c7;color:#92400e}
+    #ssModal .ss-body{flex:1;overflow:auto;padding:10px}
+    .ss-head{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;margin-bottom:10px}
+    .ss-head label{font-size:11px;font-weight:700;color:#475569;display:block}
+    .ss-head input,.ss-head select{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:6px;font-size:14px;font-family:inherit;background:#fff}
+    #ssTable{border-collapse:collapse;width:100%;min-width:720px;background:#fff;font-size:12px}
+    #ssTable th,#ssTable td{border:1px solid #94a3b8;padding:3px 4px}
+    #ssTable th{background:#fde8e1;position:sticky;top:0;z-index:2;font-size:11px}
+    #ssTable td.c{text-align:center}
+    #ssTable tr.cat td{background:#e2e8f0;font-weight:900;text-align:left}
+    #ssTable tr.man td.nm{background:#fffbeb}
+    #ssTable input{width:100%;min-width:56px;border:0;background:transparent;text-align:center;font-size:15px;font-weight:800;padding:5px 2px;font-family:inherit;outline:0}
+    #ssTable input:focus{background:#dbeafe}
+    #ssTable input[readonly]{background:#f1f5f9;color:#334155}
+    #ssTable input.t{text-align:left;font-size:12px;font-weight:600}
+    .ss-note{font-size:11px;color:#64748b;margin-top:6px}
+    #ssArch{display:none;background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:10px;margin-bottom:10px}
+    #ssArch .it{display:flex;align-items:center;gap:6px;padding:7px 4px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:700}
+    #ssArch .it span{flex:1}
+    #mnModal{display:none;position:fixed;inset:0;z-index:60;background:#f8fafc;flex-direction:column}
+    #mnModal .ss-bar{background:#fff;border-bottom:1px solid #e2e8f0;padding:10px 12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    #mnModal .ss-btn{border:0;border-radius:10px;padding:9px 11px;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit}
+    #mnModal .ss-body{flex:1;overflow:auto;padding:10px}
+    #mnArch{display:none;background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:10px;margin-bottom:10px}
+    #mnArch .it{display:flex;align-items:center;gap:6px;padding:7px 4px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:700}
+    #mnArch .it span{flex:1}
+    #mnTable{border-collapse:collapse;width:100%;min-width:600px;background:#fff;font-size:12px}
+    #mnTable th{background:#4b5563;color:#fff;position:sticky;top:0;z-index:2;font-size:11px;padding:4px}
+    #mnTable td{border:1px solid #cbd5e1;padding:3px 5px}
+    #mnTable tr.cat td{background:#e2e8f0;font-weight:900}
+    #mnTable td.mc{font-family:ui-monospace,Menlo,monospace;white-space:nowrap;vertical-align:middle}
+    #mnTable td.mv{text-align:center;font-weight:900;font-size:14px;color:#1d4ed8;min-width:70px}
+    #mnTable .ar{font-size:11px;color:#64748b}
+    @page{size:A4 portrait;margin:6mm}
+    @media print{
+      html,body{height:auto!important;background:#fff!important}
+      body>*:not(.pr-target){display:none!important}
+      #ssModal.pr-target,#mnModal.pr-target{position:static!important;display:block!important;background:#fff}
+      .ss-bar,.ss-note,#ssArch{display:none!important}
+      #ssModal .ss-body{overflow:visible;padding:0}
+      #ssModal,#ssModal *,#mnModal,#mnModal *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      #mnModal .ss-body{overflow:visible;padding:0}
+      #mnModal .ss-head{grid-template-columns:repeat(3,1fr)}
+      #mnTable{width:100%;min-width:0;table-layout:fixed;font-size:7.5pt;border-collapse:collapse}
+      #mnTable th{position:static;font-size:7.5pt;padding:.5mm 1mm}
+      #mnTable td{padding:0 1mm;line-height:1.2;border:.2mm solid #888}
+      #mnTable thead{display:table-header-group}
+      #mnTable tr{page-break-inside:avoid}
+      #mnTable th:nth-child(1){width:14%}#mnTable th:nth-child(2){width:46%}#mnTable th:nth-child(3){width:22%}#mnTable th:nth-child(4){width:18%}
+      .ss-head{grid-template-columns:repeat(6,1fr);gap:1.5mm;margin-bottom:2mm}
+      .ss-head label{font-size:6pt}
+      .ss-head input,.ss-head select{font-size:7pt;padding:.3mm 1mm;border-radius:0;height:4mm;-webkit-appearance:none;appearance:none}
+      #ssTable{width:100%;min-width:0;table-layout:fixed;font-size:7pt;border-collapse:collapse}
+      #ssTable th,#ssTable td{padding:0 1mm;height:3.1mm;line-height:1;overflow:hidden;white-space:nowrap;border-color:#555}
+      #ssTable th{position:static;height:auto;line-height:1.1;font-size:6.5pt;white-space:normal}
+      #ssTable th:nth-child(1){width:19%}#ssTable th:nth-child(2){width:32%}#ssTable th:nth-child(3){width:5%}
+      #ssTable th:nth-child(n+4){width:11%}
+      #ssTable input{font-size:7pt;font-weight:700;height:3mm;padding:0;min-width:0}
+      #ssTable tr.cat td{font-size:7pt}
+      #ssModal .ss-body>div:last-child{font-size:7pt!important;margin-top:2mm!important}
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-24">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
+          <span class="text-2xl">📦</span>
+        </div>
+        <div>
+          <h1 class="text-lg md:text-xl font-extrabold text-slate-800 leading-none">إدارة وجرد المخزون</h1>
+          <p class="text-[11px] text-emerald-600 font-bold mt-1 flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span id="totalLbl">شامل جميع المنتجات (255 صنف)</span>
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2" id="hdrBtns">
+        <button onclick="toggleLang()" id="langBtn" class="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-2 rounded-xl font-bold border border-slate-200 text-xs md:text-sm">EN</button>
+        <button onclick="mnOpen()" class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1.5 border border-blue-200 text-xs md:text-sm">📊 <span class="hidden sm:inline">الجرد الشهري</span></button>
+        <button onclick="ssOpen()" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1.5 border border-emerald-200 text-xs md:text-sm">📋 <span class="hidden sm:inline">ورقة الوردية</span></button>
+        <button onclick="openOrderModal()" class="relative bg-blue-50 text-blue-600 hover:bg-blue-100 px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1.5 border border-blue-200 text-xs md:text-sm">
+          <span class="text-lg">🛒</span> <span class="hidden sm:inline">قائمة الطلب</span>
+          <span id="cartBadge" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-black hidden">0</span>
+        </button>
+        <button onclick="openResetModal()" title="تصفير كل الكميات" class="w-10 h-10 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl flex items-center justify-center transition border border-red-200">
+          <span class="text-lg">🗑</span>
+        </button>
+        <button onclick="openAddModal()" class="hidden sm:flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold transition shadow-lg shadow-slate-900/20">
+          <span>+</span> إضافة منتج
+        </button>
+        <button onclick="openAddModal()" class="sm:hidden w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg">
+          <span class="text-lg">+</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-4 md:py-8">
+    <div class="bg-white rounded-2xl p-3 md:p-6 border border-slate-200 shadow-sm mb-4 md:mb-6 flex flex-col md:flex-row gap-3">
+      <div class="relative flex-1">
+        <span class="absolute srch-ico top-1/2 right-4 -translate-y-1/2 text-slate-400 text-xl">🔍</span>
+        <input type="text" id="searchInput" placeholder="ابحث برقم المنتج، الاسم بالعربي، أو بالإنجليزي..."
+               class="w-full bg-slate-50 border border-slate-200 rounded-xl pr-12 pl-4 srch-inp py-3 text-slate-800 font-medium focus:bg-white focus:border-blue-500 outline-none transition text-sm md:text-base">
+      </div>
+      <div class="w-full md:w-64">
+        <select id="unitFilter" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-medium focus:bg-white focus:border-blue-500 outline-none transition text-sm md:text-base">
+          <option value="ALL">جميع وحدات القياس</option>
+          <option value="CTN">📦 كرتون (CTN)</option>
+          <option value="PKT">📑 باكيت (PKT)</option>
+          <option value="PCS">✨ حبة (PCS)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mb-4 md:mb-6 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div class="flex gap-2 min-w-max" id="categoryTabs"></div>
+    </div>
+
+    <div class="flex items-center justify-between mb-3 px-1">
+      <h2 class="text-sm md:text-base font-bold text-slate-800" id="resultsTitle">المنتجات المسجلة في المخزون</h2>
+      <span class="bg-blue-100 text-blue-800 py-0.5 px-2.5 rounded-full text-xs font-bold" id="resultsCount">0</span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5" id="productsContainer"></div>
+  </main>
+
+  <!-- MODAL: ORDER QTY PROMPT -->
+  <div id="promptModal" class="fixed inset-0 bg-slate-900/60 z-50 items-center justify-center p-4 hidden modal-enter">
+    <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl relative modal-content-enter p-6 text-center">
+      <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3"><span class="text-2xl">🛒</span></div>
+      <h3 class="text-lg font-extrabold text-slate-800 mb-1" id="promptProdName"></h3>
+      <p class="text-slate-400 text-xs mb-4" id="promptProdUnit"></p>
+      <div class="mb-5">
+        <label class="block text-xs font-bold text-slate-700 mb-2">أدخل الكمية المراد طلبها:</label>
+        <input type="number" inputmode="numeric" id="promptQtyInput" placeholder="مثال: 3" class="input-field text-center text-xl font-black font-sans" onfocus="this.select()">
+      </div>
+      <div class="flex gap-2.5">
+        <button onclick="closePromptModal()" class="flex-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-3 rounded-xl transition text-sm">إلغاء</button>
+        <button onclick="confirmOrderPrompt()" class="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-600/30 text-sm">حفظ في القائمة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RESET -->
+  <div id="resetModal" class="fixed inset-0 bg-slate-900/60 z-50 items-center justify-center p-4 hidden modal-enter">
+    <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl relative modal-content-enter p-6 text-center">
+      <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4"><span class="text-3xl">⚠️</span></div>
+      <h3 class="text-xl font-extrabold text-slate-800 mb-2">تصفير جميع الكميات؟</h3>
+      <p class="text-slate-500 text-sm mb-6">هل أنت متأكد أنك تريد مسح وتصفير جميع الأرقام المدخلة في الجرد؟ (ورقة الوردية المحفوظة لن تتأثر)</p>
+      <div class="flex gap-3">
+        <button onclick="closeResetModal()" class="flex-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-3 rounded-xl transition">إلغاء</button>
+        <button onclick="resetAllStock()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-red-600/30">نعم، صَفِّر</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD PRODUCT -->
+  <div id="addModal" class="fixed inset-0 bg-slate-900/60 z-50 items-center justify-center p-4 hidden modal-enter">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl relative modal-content-enter flex flex-col max-h-[95vh]">
+      <div class="p-6 pb-4 border-b border-slate-100 flex items-center justify-between bg-slate-50 rounded-t-3xl">
+        <h3 class="text-xl font-extrabold text-slate-800">إضافة منتج جديد</h3>
+        <button onclick="closeAddModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-slate-500 hover:bg-slate-200 border border-slate-200 transition"><span>✕</span></button>
+      </div>
+      <div class="p-6 overflow-y-auto">
+        <form id="addProductForm" class="space-y-4">
+          <div><label class="block text-sm font-bold text-slate-700 mb-1.5">رقم المنتج (الكود) *</label><input type="text" id="newCode" required placeholder="مثال: 13011011" class="input-field font-sans" dir="ltr"></div>
+          <div><label class="block text-sm font-bold text-slate-700 mb-1.5">اسم المنتج (عربي) *</label><input type="text" id="newNameAr" required class="input-field"></div>
+          <div><label class="block text-sm font-bold text-slate-700 mb-1.5">اسم المنتج (إنجليزي) *</label><input type="text" id="newNameEn" required class="input-field font-sans" dir="ltr"></div>
+          <div><label class="block text-sm font-bold text-slate-700 mb-1.5">تصنيف المجموعة *</label><select id="newCategory" required class="input-field"></select></div>
+          <div><label class="block text-sm font-bold text-slate-700 mb-1.5">نوع الوحدة *</label>
+            <select id="newUnit" required class="input-field">
+              <option value="CTN - كرتون">كرتون (CTN)</option><option value="PKT - باكيت">باكيت (PKT)</option><option value="PCS - حبة">حبة (PCS)</option>
+            </select></div>
+          <div><label class="block text-sm font-bold text-slate-700 mb-1.5">طريقة الجرد الافتراضية *</label>
+            <select id="newMode" required class="input-field">
+              <option value="simple">جرد بسيط ومباشر (كرتون أو حبة فقط)</option>
+              <option value="detailed">جرد مركب تفصيلي (باكيتات + حبات مفرطة)</option>
+            </select></div>
+        </form>
+      </div>
+      <div class="p-6 border-t border-slate-100 flex gap-3 bg-white rounded-b-3xl">
+        <button onclick="closeAddModal()" type="button" class="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3.5 rounded-xl">إلغاء</button>
+        <button onclick="saveNewProduct()" type="button" class="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl">حفظ المنتج</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ORDER LIST -->
+  <div id="orderModal" class="fixed inset-0 bg-slate-900/60 z-50 items-center justify-center p-4 hidden modal-enter">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl relative modal-content-enter flex flex-col max-h-[90vh]">
+      <div class="p-6 pb-4 border-b border-slate-100 flex items-center justify-between bg-slate-50 rounded-t-3xl">
+        <h3 class="text-lg md:text-xl font-extrabold text-slate-800">قائمة طلبات الغد</h3>
+        <button onclick="closeOrderModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-slate-500 hover:bg-slate-200 border border-slate-200 transition"><span>✕</span></button>
+      </div>
+      <div class="p-6 overflow-y-auto flex-1 space-y-3" id="orderListContainer"></div>
+      <div class="p-4 border-t border-slate-100 flex gap-3 bg-white rounded-b-3xl">
+        <button onclick="closeOrderModal()" class="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl text-sm">إغلاق</button>
+        <button onclick="copyOrderText()" class="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm">نسخ القائمة للطلب</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- الجرد الشهري (Stock Take List) -->
+  <div id="mnModal">
+    <div class="ss-bar">
+      <button class="ss-btn ss-gray" onclick="mnClose()">✕ إغلاق</button>
+      <button class="ss-btn ss-gray" onclick="toggleLang()">🌐</button>
+      <button class="ss-btn ss-green" id="mnSaveBtn" onclick="mnSave()">💾 حفظ الجرد الشهري</button>
+      <button class="ss-btn ss-main" id="mnLiveBtn" onclick="mnToLive()" style="display:none">↩ الجرد الحالي</button>
+      <button class="ss-btn ss-amber" onclick="mnToggleArch()">🗓 الجرد المحفوظ</button>
+      <button class="ss-btn ss-gray" onclick="doPrint('mnModal')">طباعة / PDF</button>
+      <button class="ss-btn ss-gray" onclick="ssBackup()">💾 نسخ احتياطي</button>
+      <button class="ss-btn ss-gray" onclick="document.getElementById('ssRestore').click()">📂 استرجاع</button>
+      <span id="mnStatus" style="font-size:12px;font-weight:800;color:#334155"></span>
+    </div>
+    <div class="ss-body">
+      <div id="mnArch"></div>
+      <div class="ss-head" id="mnHead"></div>
+      <table id="mnTable" dir="ltr">
+        <thead><tr><th>Item No.</th><th>Item</th><th>Unit</th><th>Count Qty</th></tr></thead>
+        <tbody id="mnBody"></tbody>
+      </table>
+      <div class="ss-note" id="mnNote"></div>
+    </div>
+  </div>
+
+  <!-- ورقة تسليم واستلام الوردية -->
+  <div id="ssModal">
+    <div class="ss-bar">
+      <button class="ss-btn ss-gray" onclick="ssClose()">✕ إغلاق</button>
+      <button class="ss-btn ss-gray" onclick="toggleLang()">🌐</button>
+      <button class="ss-btn ss-main" id="ssPullBtn" onclick="ssPull()"></button>
+      <button class="ss-btn ss-green" id="ssConfirmBtn" onclick="ssConfirm()" style="display:none"></button>
+      <button class="ss-btn ss-amber" onclick="ssToggleArch()">🗓 الأيام المحفوظة</button>
+      <button class="ss-btn ss-green" onclick="ssWhats()">واتساب</button>
+      <button class="ss-btn ss-gray" onclick="doPrint('ssModal')">طباعة / PDF</button>
+      <button class="ss-btn ss-gray" onclick="ssBackup()">💾 نسخ احتياطي</button>
+      <button class="ss-btn ss-gray" onclick="document.getElementById('ssRestore').click()">📂 استرجاع</button>
+      <button class="ss-btn ss-red" onclick="ssReset()">مسح هذه الورقة</button>
+      <input type="file" id="ssRestore" accept=".json,application/json" style="display:none" onchange="ssRestore(this)">
+      <span id="ssStatus" style="font-size:12px;font-weight:800;color:#334155"></span>
+    </div>
+    <div class="ss-body">
+      <div id="ssArch"></div>
+      <div class="ss-head" id="ssHead"></div>
+      <table id="ssTable" dir="ltr">
+        <thead><tr><th>Code</th><th style="width:34%">Name</th><th>UOM</th><th>Opening Count<br><small>الاستلام</small></th><th>Transfer In (+)<br>TJ#</th><th>Transfer Out (-)<br>TJ#</th><th>Closing Count<br><small>التسليم</small></th></tr></thead>
+        <tbody id="ssBody"></tbody>
+      </table>
+      <div class="ss-note">كل ما تكتبه أو تسحبه يُحفظ تلقائياً باليوم والوردية. العمود المربوط (🔗) يتزامن مباشرة مع صفحة المنتج وبالعكس، وأعمدة Transfer In/Out للتسجيل فقط ولا تغيّر رصيد المنتج. الأصناف المظللة بالأصفر ليس لها منتج مطابق في الجرد.</div>
+      <div style="display:flex;gap:10px;margin-top:14px;font-size:12px;color:#475569" dir="ltr"><div style="flex:1">Employee ID: ______________</div><div style="flex:1">Employee Name: ______________</div><div style="flex:1">Signature: ______________</div></div>
+    </div>
+  </div>
+
+  <script>
+    /* ===== بيانات المنتجات (كود|عربي|إنجليزي|تصنيف|وحدة|تفصيلي) ===== */
+    const CATS = ["أكواب ساخنة","الأكواب الباردة","أغطية الأكواب","أغلفة وحوامل الأكواب","الصناديق والعلب","أكياس التعبئة والتسوق","قهوة وكبسولات","الشرابات والصلصات والبودرة","شاي ومشروبات","أجبان وألبان","مياه وعصائر","السكر والمحليات","مخبوزات وساندوتشات","كيك وكوكيز ومافن","دونات فانسى ومميز","مونشكين ودونات عادي","وجبات خفيفة ومكسرات","دواجن ولحوم","أكواب وتملبرات مبيعات","مستلزمات ونظافة","المنظفات والمعقمات","قرطاسية وملصقات","زي الموظفين (Uniform)"];
+    const UN = {C:['CTN - كرتون','CTN','كرتون (CTN)'], K:['PKT - باكيت','PKT','باكيت (PKT)'], P:['PCS - حبة','PCS','حبة (PCS)']};
+    const RAW = `15041002|مريلة زي موحد دانكن|UNIFORM.APRON DD|22|P|0
+10123003|ساندوتش بيغل قرفة دانكن (1 × 60 حبة)|SANDWICH.DD BAGEL CINNAMON (1X60 PCS)|12|C|0
+10123002|ساندوتش بيغل حبوب متعددة دانكن (1 × 60 حبة)|SANDWICH.DD BAGEL MULTIGRAIN (1X60 PCS)|12|P|0
+10123001|ساندوتش بيغل سادة دانكن (1 × 60 حبة)|SANDWICH.DD BAGEL PLAIN (1X60 PCS)|12|C|0
+14011004|مجرفة أتربة طويلة مع فرشاة|DISPOSABLES.LONG DUST PAN WITH BRUSH|19|P|0
+14011001|مكنسة بلاستيك ناعمة|DISPOSABLES.SOFT PLASTIC BROOM|19|P|0
+14011007|مجرفة أتربة إيكولاب|ECOLAB. DUSTPAN|19|P|0
+14011006|مساحة أرضيات حمراء إيكولاب|ECOLAB. FLOOR SQUEEGEE RED|19|P|0
+12023003|مافن التفاح|APPLE MUFFIN|13|P|0
+12023008|مافن التوت الأزرق|BLUEBERRY MUFFIN|13|C|0
+12023001|مافن التوت الأزرق (جاهز)|BLUEBERRY MUFFIN FG|13|P|0
+12023004|كيك الشوكولاتة|CHOCOLATE CAKE|13|P|0
+12023024|كوكيز بقطع الشوكولاتة|CHOCOLATE CHIP COOKIES|13|P|0
+12023007|مافن الشوكولاتة|CHOCOLATE MUFFIN|13|C|0
+12023002|مافن الشوكولاتة (جاهز)|CHOCOLATE MUFFIN FG|13|P|0
+12023018|مافن التمر|DATE MUFFIN|13|C|0
+12023023|كيك التمر|DATES CAKE|13|P|0
+12023022|مافن التمر|DATES MUFFIN|13|P|0
+12023006|كوكيز دبل شوكولاتة|DOUBLE CHOCO COOKIES|13|P|0
+12023005|كيك رخامي (ماربل)|MARBLE CAKE|13|P|0
+12023021|كيك الفانيليا|VANILLA CAKE|13|P|0
+12023019|مافن فانيليا بالشوكولاتة|VANILLA CHOCO MUFFIN|13|P|0
+10015003|كبسولات قهوة إسبريسو بولد روست (10 كبسولات)|COFFEE.BOLD ROAST ESPRESSO (10CAPS)|6|K|0
+10015001|كبسولات قهوة إسبريسو سيجنتشر بلند (10 كبسولات)|COFFEE.SIGNATURE BLEND ESPRESSO (10CAPS)|6|C|0
+10022001|شرائح جبن للساندوتش (10 شرائح)|CHEESE.SLICE CHEESE FOR SANDWICH (10 SLICES)|9|P|0
+10022023|جبنة كريمية (2 كجم)|CREAM CHEESE (2KG)|9|C|0
+10022003|لبنة كاملة الدسم (180 جم × 60 حبة)|SPREADS.LABNEH FULL FAT (180 GMS 60 PCS)|9|K|0
+10022002|جبنة كريمية فيلادلفيا 180 جم|SPREADS.PHILADELPHIA CREAM CHEESE 180 GM|9|K|0
+10033008|كريمة خفق بخاخ 250 مل|TOPPING.WHIPPING CREAM SPRAY 250 ML|9|P|0
+13015001|حامل أكواب كرتون ثنائي (2 كوب)|BOXES.TWO CUP CARRIER BOX|3|C|0
+13015004|حامل أكواب رباعي (4 أكواب)|CUPS.CARRIER 4 CUPS (1X 200 PCS)|3|K|0
+13015006|أغلفة ورقية عازلة للأكواب 14 و16 و20 أونصة|DISPOSABLES SLEEVE FOR 14 16 20OZ CUPS|3|C|0
+13015005|أغلفة ورقية عازلة للأكواب 9 و10 أونصة|DISPOSABLES SLEEVE FOR 9 10 OZ CUPS|3|C|0
+13024001|ملاعق بلاستيكية (مغلف 1 × 50 حبة)|DISPOSABLES.PLASTIC SPOON PACK (1X50 PCS)|19|P|0
+10012001|قهوة دانكن دارك روست مطحونة (كيس 1 رطل)|COFFEE.DD DARK ROAST GROUNDS BAG 01 LBS|6|C|0
+10014001|قهوة دانكن خالية من الكافيين مطحونة (كيس 1 رطل)|COFFEE.DD DECAF COFFEE GROUNDS BAG 01 LBS|6|K|0
+10013001|حبوب قهوة إسبريسو (كيس 1 كجم)|COFFEE.ESPRESSO BEANS BAG 01 KG|6|C|0
+12012010|دونات بيري تروبيكس|BERRY TROPIX|14|P|0
+12012022|دونات شوكو هارت (قلب الشوكولاتة)|CHOCO HEART|14|P|0
+12012024|دونات كراون كنافة بالشوكولاتة|CHOCO KUNAFA CROWN|14|P|0
+12012007|دونات كوفي رول|COFFEE ROLL|14|P|0
+12012011|علبة كوكيز|COOKIE BOX|14|P|0
+12012023|دونات دارك ويف بالفستق|DARKWAVE PISTACHIO|14|P|0
+12012019|دونات هارموني تمر بالبندق|HAZELNUT DATES HARMONY|14|P|0
+12012018|دونات هارموني تمر بالبندق مخصصة|HAZELNUT DATES HARMONY DONUT|14|P|0
+12012012|دونات مانجو ميراج|MANGO MIRAGE|14|P|0
+12012013|دونات أوريو هازلنوفا|OREO HAZENOVA|14|P|0
+12012021|دونات بستاشيو كريمي كرانش|PISTACHIO CREAMY CRUNCH|14|P|0
+12012025|دونات روبي كرانش|RUBY CRUNCH|14|P|0
+13019001|فلاتر قهوة كولد برو|DISPOSABLES.COLD BREW FILTER|19|K|0
+10083012|شراب (سيروب) بلو باي 1 لتر|BLUE BAY SYRUP (6 X1 LTR)|7|P|0
+10083052|صوص كراميل في عبوة قلم 300 مل|CARAMEL SAUCE PEN 300 ML|7|P|0
+10083025|بودرة ماتشا 1 كجم|MATCHA POWDER -1KG|7|K|0
+10083044|بودرة ماتشا جست تشيل 1 كجم|MATCHA POWDER JUST CHILL (1KGX12 PCS)|7|K|0
+10083014|بودرة شوكولاتة ساخنة (كيس 3 أرطال / 1.36 كجم)|POWDER.CHOCOLATE HOT POWDER BAG 03 LBS|7|K|0
+10083013|مسحوق فرابيه تشيزكيك 1 كجم|POWDER.FRAPPE-CHEESECAKE 1 KG|7|K|0
+10083009|صوص كراميل قلم 165 مل|SYRUP.CARAMEL SAUCE PEN 165 ML|7|P|0
+10083003|شراب (سيروب) كراميل 750 مل|SYRUP.CARAMEL SYRUP 750 ML|7|P|0
+10083043|شراب دا فينشي فراولة 750 مل|SYRUP.DAVINCI STRAWBERRY SYRUP (12 X 750ML)|7|P|0
+10083007|شراب (سيروب) بندق 750 مل|SYRUP.HAZELNUT SYRUP 750 ML|7|P|0
+10083008|صوص موكا قلم 165 مل|SYRUP.MOCHA SAUCE PEN 165 ML|7|P|0
+10083017|شراب مونين توت أزرق 1 لتر|SYRUP.MONIN BLUEBERRY SYRUP (6X1LTR)|7|P|0
+10083004|شراب مونين خوخ آيس تي 1 لتر|SYRUP.MONIN PEACH ICETEA SYRUP 01 LTR|7|P|0
+10083005|شراب مونين رانشو ليمونادة 1 لتر|SYRUP.MONIN RANCHO LEMONADE SYRUP 01 LTR|7|P|0
+10083010|شراب مونين فراولة 1 لتر|SYRUP.MONIN STRAWBERRY SYRUP 01 LTR|7|P|0
+10083006|شراب (سيروب) فانيليا 750 مل|SYRUP.VANILLA SYRUP 750 ML|7|P|0
+12021002|كرواسون بالجبن|CHEESE CROISSANT|12|P|0
+12021004|كرواسون بالشوكولاتة|CHOCOLATE CROISSANT|12|P|0
+12021006|كرواسون ميبل بيكان|MAPLE PECAN CROISSANT|12|P|0
+12021001|كرواسون سادة|PLAIN CROISSANT|12|P|0
+12021003|كرواسون بالزعتر|ZAATER CROISSANT|12|P|0
+10082004|بيوريه مانجو ودراجون فروت 1 لتر|MANGO DRAGON FRUIT PUREE (6 X1 LTR)|7|P|0
+10082002|بيوريه التوت الأزرق 1 لتر|SYRUP.BLUEBERRY PUREE 01 LTR|7|P|0
+10082001|بيوريه الكرز 1 لتر|SYRUP.CHERRY PUREE 01 LTR|7|P|0
+12033005|زبادي جرانولا بالعسل (1 × 36 × 170 جم)|HONEY GRANULA YOGHURT 1X36X170G|16|P|0
+12033002|مكسرات بالكراميل (6 × 12 × 50 جم)|MERCHANDISE.CARAMEL NUT 6X12X50G|16|K|0
+12033001|مكسرات بالشوكولاتة الداكنة (6 × 12 × 50 جم)|MERCHANDISE.DOUBLE DARK CHOC NUT 6X12X50G|16|K|0
+14027026|مناديل ورقية 30×30 سم (1 × 4000 حبة)|DISPOSABLES NAPKINS GF SIZE 30X30 CM 1X4000|19|C|0
+14027003|قفازات استخدام واحد (مغلف 500 حبة)|DISPOSABLES.D. GLOVES 1 PACK|19|K|0
+14027006|كمامات وجه اقتصادية (مغلف 50 حبة)|DISPOSABLES.ECONOMY FACE MASK 1 PACK|19|K|0
+14027008|مناديل رول جامبو أزرق|DISPOSABLES.JUMBO ROLL-BLUE|19|P|0
+14027007|مناديل رول ماكسي|DISPOSABLES.MAXI ROLL|19|C|0
+14027005|غطاء رأس شبكي للشعر (مغلف 100 حبة)|DISPOSABLES.MOB CAP 1 PACK|19|K|0
+14027002|مناديل دانكن ورقية (1 × 3600 حبة)|DISPOSABLES.NAPKINS DD (1X3600)|19|C|0
+14027009|أكياس نفايات سوداء (كرتون 300 حبة)|DISPOSABLES.TRASH BAG BLACK|19|C|0
+12043002|عصير كرز 300 مل|CHERRY JUICE 300ML|10|C|0
+12043004|عصير مانجو 300 مل|MANGO JUICE 300ML|10|C|0
+12043003|عصير برتقال 300 مل|ORANGE JUICE 300 ML|10|C|0
+13022001|أغطية أكواب قهوة وشاي 10 أونصة|LIDS COFFEE AND TEA CUPS LIDS 10OZ|2|K|1
+13022002|أغطية أكواب قهوة 14 و16 و20 أونصة|LIDS COFFEE CUPS LIDS 14 16 20OZ|2|K|1
+13022007|أغطية أكواب قهوة وشاي مزدوجة الجدار 10 أونصة|LIDS DW COFFEE AND TEA CUPS 10OZ|2|K|1
+13022008|أغطية أكواب قهوة وشاي مزدوجة الجدار 14 و16 و20 أونصة|LIDS DW COFFEE AND TEA CUPS 14OZ 16OZ 20OZ|2|K|1
+13022010|أغطية أكواب قهوة وشاي مزدوجة الجدار 9 أونصة|LIDS DW COFFEE AND TEA CUPS 9OZ|2|K|1
+13022004|أغطية بلاستيكية مقببة (دوم) 12 و16 و24 أونصة|LIDS PLASTIC DOME LIDS 12 16 24OZ|2|K|1
+13022005|أغطية بلاستيكية مسطحة (فلات) 12 و16 و24 أونصة|LIDS PLASTIC FLAT LIDS 12 16 24OZ|2|K|1
+13022003|أغطية أكواب قهوة 9 أونصة|LIDS.COFFEE CUPS LIDS 9OZ|2|P|1
+13022011|أغطية بلاستيكية مقببة (دوم) 32 أونصة|LIDS.PLASTIC DOME LIDS 32OZ|2|P|1
+13022009|أغطية بلاستيكية مسطحة (فلات) 32 أونصة|LIDS.PLASTIC FLAT LIDS 32OZ|2|K|1
+13022028|أغطية علب الصوص 2 أونصة (20 مغلف × 100 حبة)|SAUCE LID 2 OZ 20 PACK X 100 PCS|2|P|1
+13017007|فلاتر تحضير القهوة الكبيرة (500 حبة)|DISPOSABLES.BULK BREWER FILTERS 1 PACK (500 PCS)|19|C|0
+13017006|فلاتر قهوة (500 حبة)|DISPOSABLES.COFFEE FILTERS 1 PACK (500 PCS)|19|K|0
+13017008|ورق تغليف غير مشمع (1 × 2000 حبة)|DISPOSABLES.UNWAX TISSUES (1X2000 PCS)|19|C|0
+13017002|ورق مانع للزيوت أسود (1 × 1000 حبة)|GREASE PROOF BLACK LINER (BDL 1X1000 PCS)|19|K|0
+13017003|ورق بارشمنت للخبز 12 × 10.75 (1 × 400 حبة)|PAPER PARCHMENT LINER 12 X 1075 1X400 PCS|19|K|0
+10021001|حليب كامل الدسم 1 لتر|MILK.FULL FAT MILK 01 LTR|9|C|0
+10021002|حليب قليل الدسم 1 لتر|MILK.LOW FAT MILK 01 LTR|9|C|0
+10024001|مشروب حليب اللوز الأصلي 8 × 1 لتر|MILK ALMOND DRINK ORIGINAL 8X1LTR|9|C|0
+10024002|مشروب حليب جوز الهند الأصلي 12 × 1 لتر|MILK COCONUT DRINK ORIGINAL 12X1LTR|9|C|0
+10151001|مياه صودا فوارة 24 × 300 مل|SPARKLING SODA 24X300ML|10|C|0
+10151003|مياه صودا فوارة 30 × 250 مل|SPARKLING SODA 30X250ML|10|C|0
+14013001|رأس ممسحة أرضيات (كرتون 36 حبة)|DISPOSABLES.MOPHEAD (1 CTNX36PCS)|19|P|0
+14013003|رأس ممسحة أصفر إيكولاب|ECOLAB. MOP HEAD YELLOW|19|P|0
+12013001|مونشكين بافاريان|BAVARIAN MUNCHKIN|15|P|0
+12013005|مونشكين كيك بترنت|CAKE BUTTERNUT MUNCHKINS|15|P|0
+12013007|مونشكين شوكولاتة جليزد|CHOCO GLAZED MUNCHKIN|15|P|0
+12013011|مونشكين كيك جليزد|GLAZED CAKE MUNCHKINS|15|P|0
+12013002|مونشكين جليزد مخمر|GLAZED YEAST MUNCHKIN|15|P|0
+16021005|رول ورق حراري لشبكة مدى (1 × 100 رول)|PAPER.MADA THERMAL ROLL (1X100 PCS)|21|P|0
+16021004|رول ورق طابعة الفواتير حراري (5 حبات)|PAPER.RECEIPT PRINTER ROLLS THERMO|21|K|0
+16021010|رول ملصقات توصيل دانكن|STATIONARY.DUNKIN DELIVERY STICKERS ROLL|21|P|0
+16021008|رول ملصقات مدة الصلاحية (1 × 1000)|STATIONARY.SHELF LIFE STICKERS ROLL (1X1000)|21|P|0
+10011004|حبوب قهوة دانكن (كيس 2.5 رطل)|COFFEE.DD COFFEE BEANS BAG 2.5 LBS|6|K|0
+10011001|حبوب قهوة دانكن (كيس 5 أرطال)|COFFEE.DD COFFEE BEANS BAG 5 LBS|6|C|0
+10011002|قهوة دانكن مطحونة (كيس 1 رطل)|COFFEE.DD COFFEE GROUNDS BAG 01 LBS|6|P|0
+10011003|حبوب قهوة دانكن دارك روست كاملة (كيس 2 رطل)|COFFEE.DD DARK ROAST WHOLE BEAN BAG 02 LBS|6|K|0
+15021006|بنطلون زي موحد مقاس 34|UNIFORM PANTS 34|22|P|0
+15021007|بنطلون زي موحد مقاس 36|UNIFORM PANTS 36|22|P|0
+13014001|أكياس ورقية بنية 5 أرطال (1 × 1000 حبة)|BAGS.BAG BROWN 5 LBS (1X1000 PCS)|5|C|0
+13012010|صندوق بوكس أوف جو دانكن 112 أونصة|BOXES.BOX O JOE (DUNKIN BOX 112 OZ)|4|C|0
+13012019|صندوق بوكس أوف جو دانكن 20 أونصة|BOXES.BOX O JOE(DUNKIN BOX 20OZ)|4|C|0
+13012018|صندوق بوكس أوف جو دانكن 40 أونصة|BOXES.BOX O JOE(DUNKIN BOX 40OZ)|4|C|0
+13012020|صندوق بوكس أوف جو دانكن برتقالي 40 أونصة|BOXES.BOX O JOE(ORANGE BOX 40OZ)|4|P|0
+13012007|علبة دونات 3 حبات للسعودية|BOXES.BOX OF 3 FOR KSA|4|P|0
+13012006|مقسم علبة دونات 12 حبة|BOXES.DIVIDER 12PCS FOR DONUT BOX 12PCS|4|P|0
+13012005|مقسم علبة دونات 6 حبات|BOXES.DIVIDER 6PCS FOR DONUT BOX 6PCS|4|P|0
+13012001|علبة دونات 6 حبات|BOXES.DONUT BOX 6 PCS|4|C|0
+13012002|علبة دونات مطبوعة 12 حبة|BOXES.DONUT BOX PRINTED 12 PCS|4|C|0
+13012003|علبة مونشكين سعة 25 حبة|BOXES.MUNCHKIN BOX OF 25|4|C|0
+13011004|أكواب قهوة وشاي 10 أونصة|CUPS COFFEE AND TEA CUPS 10OZ|0|K|1
+13011011|أكواب قهوة وشاي مزدوجة الجدار 10 أونصة|CUPS DW COFFEE AND TEA CUPS 10OZ|0|K|1
+13011012|أكواب قهوة وشاي مزدوجة الجدار 14 أونصة|CUPS DW COFFEE AND TEA CUPS 14OZ|0|K|1
+13011014|أكواب قهوة وشاي مزدوجة الجدار 16 أونصة|CUPS DW COFFEE AND TEA CUPS 16OZ|0|K|1
+13011015|أكواب قهوة وشاي مزدوجة الجدار 20 أونصة|CUPS DW COFFEE AND TEA CUPS 20OZ|0|K|1
+13011013|أكواب قهوة وشاي مزدوجة الجدار 9 أونصة|CUPS DW COFFEE AND TEA CUPS 9OZ|0|K|1
+13011006|أكواب قهوة أحادية الجدار 16 أونصة|CUPS.COFFEE CUPS 16OZ|0|K|1
+13011007|أكواب قهوة أحادية الجدار 20 أونصة|CUPS.COFFEE CUPS 20OZ|0|K|1
+13011008|أكواب قهوة أحادية الجدار 9 أونصة|CUPS.COFFEE CUPS 9OZ|0|K|1
+13011016|أكواب كابتشينو مزدوجة الجدار 10 أونصة|CUPS.D/W CAPPUCCINO CUP 10OZ|0|K|1
+13011019|أكواب كابتشينو مزدوجة الجدار 12 أونصة|CUPS.D/W CAPPUCCINO CUP 12OZ|0|K|1
+13011017|أكواب كابتشينو مزدوجة الجدار 16 أونصة|CUPS.D/W CAPPUCCINO CUP 16 OZ|0|K|1
+13011018|أكواب كابتشينو مزدوجة الجدار 20 أونصة|CUPS.D/W CAPPUCCINO CUP 20 OZ|0|K|1
+13011010|أكواب إسبريسو 4 أونصة|CUPS.ESPRESSO CUPS 4OZ|0|K|1
+13023002|أكياس تسوق دانكن كبيرة|BAGS.DD SHOPPING BAGS LARGE|5|C|0
+13023003|أكياس تسوق دانكن صغيرة|BAGS.DD SHOPPING BAGS SMALL|5|C|0
+13021005|أكواب باردة شفافة بلاستيك 12 أونصة|CUPS.COLD CUP CLEAR PLASTIC - 12 OZ|1|K|1
+13021001|أكواب باردة بلاستيك 4 أونصة|CUPS.COLD CUPS 4OZ|1|P|1
+13021002|أكواب باردة بلاستيك 16 أونصة|CUPS.COLD CUPS PLASTIC 16OZ|1|K|1
+13021003|أكواب باردة بلاستيك 24 أونصة|CUPS.COLD CUPS PLASTIC 24OZ|1|K|1
+13021006|أكواب باردة بلاستيك 32 أونصة|CUPS.COLD CUPS PLASTIC 32OZ|1|K|1
+13021004|أكواب بلاستيكية للعينات / البورشن (مغلف 50 حبة)|CUPS.PORTION PLASTIC CUPS SLEEVE (1X50 PCS)|1|K|1
+13021021|علب صوص بلاستيك 2 أونصة (20 مغلف × 100 حبة)|SAUCE CUP 2 OZ 20 PACK X 100 PCS|1|P|1
+10092001|مرتديلا دجاج (مغلف 5 حبات)|MORTADELLA.CHICKEN MORTADELLA|17|K|0
+10092018|بيض مجمد للساندوتش 1 كجم|SANDWICH FROZEN EGG 1KG|17|P|0
+10092002|بيض سائل مبستر مبرد للساندوتش 1 كجم|SANDWICH.LIQUID WHOLE EGG CHILLED PAST 1KG|17|P|0
+12011052|دونات لوز وبندق|ALMOND HAZELNUT|15|P|0
+12011034|دونات بوستون كريم|BOSTON CREAM DONUT|15|P|0
+12011100|دونات شوكو كوكو|CHOCO COCO DONUT|15|P|0
+12011001|دونات شوكولاتة فروستد|CHOCO FROSTED DONUT|15|P|0
+12011006|دونات شوكولاتة سبرنكلز|CHOCO SPRINKLE|15|P|0
+12011085|دونات كولد برو كرانش|COLD BREW CRUNCH DONUT|15|P|0
+12011088|دونات كوكيز|COOKIE DONUT|15|P|0
+12011069|دونات كوكيز آند كريم ماربل|COOKIES AND CREAM MARBLE|15|P|0
+12011082|دونات كوتن كاندي بف|COTTON CANDY PUFF|15|P|0
+12011002|دونات جليزد سادة|GLAZED DONUT|15|P|0
+12011098|دونات كنافة شوكو كرانش|KUNAFA CHOCO CRUNCH|15|P|0
+12011064|دونات لونج جون|LONG JOHN|15|P|0
+12011094|ميني دونات شوكو فروست|MINI CHOCO FROST|15|P|0
+12011096|ميني دونات كريمة التمر|MINI DATES CREAM|15|P|0
+12011067|دونات أولد فاشوند|OLD FASHIONED DONUT|15|P|0
+12011099|دونات بينك بيري|PINK BERRY|15|P|0
+12011092|دونات بيربل فلفيت كريم|PURPLE VELVET CREAM|15|P|0
+12011093|دونات بيربل فلفيت سبرنكل|PURPLE VELVET SPRINKLE|15|P|0
+12011101|دونات تشيزكيك الفراولة كرانش|STRAWBERRY CHEESECAKE CRUNCH|15|P|0
+12011044|دونات تشيزكيك الفراولة|STRAWBERRY CHESSECAKE|15|P|0
+12011056|دونات تيراميسو تشيزكيك|TIRAMISU CHEESECAKE|15|P|0
+12011087|دونات فانيليا كاندي سبرنكل|VANILLA CANDY SPRINKLE DONUT|15|P|0
+14022002|جل معقم لليدين (زجاجة)|CHEMICALS.HAND SANITIZING GEL BOTTLE|20|P|0
+14022003|أقراص معقم إيكولاب كاي 5 (علبة 240 قرص)|ECOLAB KAY 5 SANITIZER TABLET 1 BOX (240 TABLETS)|20|C|0
+10061045|كوكيز قطع الشوكولاتة|CHOCO CHIP COOKIES|7|P|0
+10061017|صوص زعفران (4 × 1.89 لتر)|SAFFRON SAUCE (4 X 1.89 LTR)|7|P|0
+10061002|صوص أرابيسكي كراميل مملح 3 كجم للفرابيه|SAUCE.ARABESCHI CARAMEL FLEUR DE SEL 3 KG FOR FRAPPE|7|K|0
+10061004|صوص أرابيسكي فراولة إكسترا 1 كجم|SAUCE.ARABESCHI STRAWBERRY EXTRA 1 KG|7|K|0
+10061016|صوص شيبوتلي مايونيز 225 مل|SAUCE.CHIPOTLE MAYONNAISE 225ML|7|P|0
+10061011|صوص بنكهة الشوكولاتة 2 لتر|SAUCE.CHOCOLATE FLAVORED SAUCE (2 LTR)|7|P|0
+10061010|صوص كراميل مملح دا فينشي 2 لتر للاتيه|SAUCE.DA VINCI SALTED CARAMEL SAUCE 2LTR FOR LATTE|7|P|0
+10061019|صوص دا فينشي جورميه بنكهة القهوة العربية (3 × 2 لتر)|SAUCE.DAVINCI GOURMET ARABIC COFFEE FLAVORED SAUCE (3PX2L)|7|P|0
+10061012|صوص ليمونادة 1 لتر|SAUCE.LEMONADE 1 LTR|7|P|0
+10061007|صوص مايونيز كريمي 400 مل|SAUCE.MAYONNAISE CREAMY 400ML|7|P|0
+10061006|صوص كاتشب طماطم 570 مل|SAUCE.TOMATO KETCHUP 570ML|7|P|0
+10061013|صوص بطيخ 750 مل|SAUCE.WATERMELON 750ML|7|C|0
+10061005|صوص شوكولاتة بيضاء 2 لتر|SAUCE.WHITE CHOCOLATE SAUCE 2 LTR|7|C|0
+10061018|صوص بيستو 185 جم|SPREADS.PESTO SAUCE 185 GM|7|P|0
+10061001|صوص تاباسكو سيراتشا (300 جم)|TABASCO SRIRACHA SAUCE (300 GRM)|7|K|0
+10063002|عسل طبيعي 380 جم|SPREADS.HONEY 380 GM|7|P|0
+14021004|صابون غسيل أيدي كاي 4 جالون|CHEMICALS.KAY QSR AMH HAND WASH 4 GALLON|20|P|0
+14021003|صابون يدين نافكير 1 لتر|CHEMICALS.NAPHCARE-HAND SOAP 1 LTR|20|P|0
+14021001|منظف متعدد الاستخدامات إيكولاب كاي (علبة 168 ظرف)|ECOLAB CHEMICALS.KAY MULTI PURPOSE 1 BOX (168 SACHETS)|20|C|0
+99021099|كبسولات نيتروجين N2O للكريمة ISI (علبة 10 حبات)|ISI N2O CREAM CHARGER IS-0703 (BOX-10PCS)|19|P|0
+99021027|جهاز موزع مناديل ماكسي رول|MAXI ROLL DISPENSER|19|C|0
+99021023|جهاز موزع صابون|SOAP DISPENSER|19|C|0
+13025002|شفاطات بلاستيكية كبيرة (مغلف 1 × 100 حبة)|DISPOSABLES.PLASTIC STRAW BIG (1X100 PCS)|19|K|0
+13025001|شفاطات بلاستيكية صغيرة (مغلف 1 × 250 حبة)|DISPOSABLES.PLASTIC STRAW SMALL (1X250 PCS)|19|K|0
+10141003|أصابع سكر بني (1 × 2000 حبة)|SUGAR.BROWN SUGAR STICK (1X2000)|11|C|0
+10141002|أصابع سكر أبيض 5 جم (1 × 2000 حبة)|SUGAR.SUGAR STICK 5GM (1X2000)|11|C|0
+10141004|سكر دايت تروبيكانا سليم (1 × 1200 ظرف)|SUGAR.TROPICANA SLIM SUGAR (1X1200)|11|K|0
+10081001|شراب قصب السكر 750 مل|SYRUP.SUGAR CANE SYRUP 750 ML|7|P|0
+10131001|شاي أسود بولد بريكفاست (15 كيس / علبة)|TEA.BOLDBREAKFAST BLACK TEA (1X15 /BOX)|8|P|0
+10131002|شاي كرك 500 جم|TEA.KARAK CHAI 500GM|8|K|0
+14028001|شرائط اختبار الكلور إيكولاب كاي|ECOLAB CHEMICALS.KAY CHLORINE TEST STRIPS|20|K|0
+10122001|توست تكساس دانكن (1 × 100 حبة)|SANDWICH.DD TOAST TEXAS (1X100 PCS)|12|C|0
+15011012|تي شيرت بائع مقاس (L)|UNIFORM.SALESMAN T-SHIRT (L)|22|P|0
+15011014|تي شيرت بائع مقاس (M)|UNIFORM.SALESMAN T-SHIRT(M)|22|P|0
+12051001|زجاجة بلوتوث سوداء 500 مل|BLUETOOTH BOTTLEBLACK 500ML|18|P|0
+12051002|زجاجة بلوتوث برتقالية 500 مل|BLUETOOTH BOTTLEORANGE 500ML|18|P|0
+12051003|كوب حافظ حرارة بلوتوث أسود 800 مل|BLUETOOTH TUMBLERBLACK 800ML|18|P|0
+12051004|كوب حافظ حرارة بلوتوث أبيض 800 مل|BLUETOOTH TUMBLERWHITE 800ML|18|P|0
+12051008|مطارة ماء رياضية سيليكون برتقالية 2 لتر|GYM SILICON L ORANGE 2LTR|18|P|0
+12051006|مطارة ماء رياضية سيليكون بيضاء 600 مل|GYM SILICON R WHITE 600ML|18|P|0
+12051014|ماج حافظ للحرارة مفرغ من الهواء 480 مل|MERCHANDISE.VACUUM MUG 480ML|18|P|0
+12051012|كوب بيلموا بريميوم برتقالي 473 مل|PILMOA PREMIUM ORANGE 473ML|18|P|0
+12051011|كوب بيلموا بريميوم ستانلس ستيل 473 مل|PILMOA PREMIUM SUS 473ML|18|P|0
+12051010|كوب بيلموا بريميوم أبيض 473 مل|PILMOA PREMIUM WHITE 473ML|18|P|0
+12051040|تملبر شوكولار دانكن أسود|TUMBLER.CHOCOLAR TUMBLER DD - BLACK|18|P|0
+12051052|كوب دانكن الجديد العادي|TUMBLER.NEW DUNKIN MUG REGULAR|18|P|0
+12041004|مياه إيفيان فوارة علب 24 × 0.33 لتر|EVIAN SPARKLING WATER CAN 24 X 0.33L|10|C|0
+12041005|مياه كينزا فوارة زجاجة 250 مل|KINZA-SPARKLING WATER BOTTLE 250ML|10|C|0
+12041002|مياه إيفيان زجاجة 500 مل|WATER.EVIAN WATER BOTTLE 500 ML|10|C|0
+12041003|مياه نوفا زجاجة 330 مل|WATER.NOVA WATER BOTTLE 330 ML|10|C|0
+14012001|ممسحة أرضيات|DISPOSABLES.FLOOR WIPER|19|P|0
+13051001|أعواد تحريك خشبية (1 × 1000 حبة)|DISPOSABLES.STIR STICKS (1X1000 PCS)|19|K|0
+13013001|أكياس تغليف ساندوتش ورقية (1 × 2000 حبة)|BAGS.WRAP SANDWICH BAG (1X2000 PCS)|5|C|0
+10083056|شراب ليمونادة يالوفا (كرتون × 6 حبات × 750 مل)|LEMONADE SYRUP YALOVA (CTN x 6 PCS x 750 ML)|7|C|0
+10131011|شاي كركديه (كرتون × 24 حبة × 250 جم)|HIBISCUS TEA (CTN X 24 PCS X 250 GRM)|8|C|0
+10082003|شراب (سيروب) بطيخ 750 مل|WATERMELON SYRUP 750ML|7|P|0
+14021008|دايفرسي - رغوة عناية ناعمة لليدين H42|DIVERSEY-SOFT CARE FOAM H42|20|P|0
+14022009|دايفرسي - معقم عناية ناعمة E H5 (5 لتر)|DIVERSEY-SOFTCARE DES E H5 5LITER|20|P|0
+14024003|دايفرسي - سوما مزيل تكلسات D5|DIVERSEY-SUMA CAL-X D5 5|20|P|0
+14022010|دايفرسي - سوما منظف شوايات للحرارة العالية D9.8|DIVERSEY-SUMA GRILL HI-TEMP D9.8 750ML|20|P|0
+13012062|صندوق دريم دونات سكويشيز 10 حبات|DREAM DONUT BOX SQUISHIES 10 PCS (CTN x 200 Pcs)|4|P|0
+13012063|صندوق دريم دونات سكويشيز 20 حبة|DREAM DONUT BOX SQUISHIES 20 PCS (CTN x 100 Pcs)|4|P|0
+13012064|مقسم دريم دونات سكويشيز 10 حبات|DREAM DONUT DIVIDER SQUISHIES 10 PCS(CTN x 200 PCS)|4|P|0
+13012065|مقسم دريم دونات سكويشيز 20 حبة|DREAM DONUT DIVIDER SQUISHIES 20 PCS(CTN x 100 Pcs)|4|P|0
+15011067|زي موحد - تي شيرت مدرب مقاس (L)|UNIFORM.TRAINER T-SHIRT - L|22|P|0
+15011068|زي موحد - تي شيرت مدرب مقاس (XL)|UNIFORM.TRAINER T-SHIRT - XL|22|P|0
+12041001|جالون مياه 18.9 لتر|WATER.GALLON WATER|10|P|0
+12051048|غلاف زر (Button Sleeve)|MERCHANDISE.BUTTON SLEEVE|3|P|0
+12051049|غلاف فيلكرو (Welcro Sleeve)|MERCHANDISE.WELCRO SLEEVE|3|P|0
+12051050|حامل ثلاثي للتقطير مع حامل ستانلس|MERCHANDISE TRIPLE DRIPPER AND SS HOLDER|18|P|0
+MUG-000001|ماج سيراميك سبرنكلز 16 أونصة|Ceramic Sprinkles Appear Mug 16oz|18|P|0
+12051041|تملبر شوكولار دانكن عاجي|TUMBLER.CHOCOLAR TUMBLER DD - IVORY|18|P|0
+12051045|ماج دانكن ستانلس (أسود وأبيض)|TUMBLER.DD STAINLESS MUG ( BLACK AND WHITE)|18|P|0
+TUM-000041|زجاجة ترطيب 500 مل|Hydration Bottles 500 ML|18|P|0
+12051005|مطارة ماء رياضية سيليكون سوداء 600 مل|GYM SILICON R BLACK 600ML|18|P|0
+12051007|مطارة ماء رياضية سيليكون سوداء 2 لتر|GYM SILICON L BLACK 2LTR|18|P|0
+12051009|كوب بيلموا بريميوم أسود 473 مل|PILMOA PREMIUM BLACK 473ML|18|P|0
+COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسولات)|Light Roast Espresso (10caps)|6|P|0
+12011037|دونات بافاريان محشو|BAVARIAN FILLED|15|P|0
+12011049|دونات اليوم الوطني|NATIONAL DAY DONUT|15|P|0
+12011107|دونات اليوم الوطني السعودي|SAUDI NATIONAL DAY DONUT|15|P|0
+12011106|سكويشيز كريمة بيسكوف|SQUISHIES BISCOFF CREAM|15|P|0
+12011104|سكويشيز تشيزكيك|SQUISHIES CHEESECAKE|15|P|0
+12011105|سكويشيز شوكولاتة وبندق|SQUISHIES CHOCO HAZELNUT|15|P|0
+12011103|سكويشيز فستق|SQUISHIES PISTACHIO|15|P|0
+10141009|سكر أبيض (كرتون × 14 باكيت × 725 جم)|WHITE SUGAR (CTN x 14 PKT X 725 GRM)|11|C|0
+14026008|أقراص تنظيف ماكينة القهوة (علبة × 150 قرص)|CHEMICALS.CLEANER TABLET CLEANER(BOX X 150 PCS)|20|K|0
+13024010|شوك فواكه بلاستيك (20 مغلف × 100 حبة)|PLASTIC FRUIT FORK 20 PACK X 100 PCS|19|K|0
+10082007|خليط مانجو دا فينشي (6 × 1 لتر)|DA VINCI MANGO FRUIT MIX (6X1 LTR)|7|P|0
+14027010|أكياس نفايات 10 جالون (1 × 30)|DISPOSABLES.TRASH BAG-10 G 1X30|19|K|0
+14027011|رول ورق مسح بقص تلقائي|DISPOSABLES.WIPING PAPER AUTO CUTTED ROLL|19|P|0
+13022006|سدادات بلاستيكية للأغطية|LIDS.PLASTIC STOPPER|2|K|1
+10024003|مشروب حليب الشوفان الأصلي 6 × 1 لتر|MILK OAT DRINK ORIGINAL 6X1LTR|9|P|0
+12044002|حليب فراولة وتوت بر بيري (12 × 180 مل)|BR BERRY STRAWBERRY MILK (12 X 180 ML)|9|P|0
+11014001|مونشكين YDM (شبه مخمر)|YDM MUNCHKIN|15|P|0
+13012060|حامل داخلي لعلبة الصوص|BOX INSIDE HOLDER FOR SAUCE BOWL|4|P|0
+13012067|صندوق دريم دونات سكويشيز 10 حبات (جديد)|DREAM DONUT BOX SQUISHIES 10 PCS (CTN x 200 PCS) New|4|P|0
+13012068|صندوق دريم دونات سكويشيز 20 حبة (جديد)|DREAM DONUT BOX SQUISHIES 20 PCS (CTN x 100 Pcs) New|4|P|0
+13012069|مقسم دريم دونات سكويشيز 10 حبات (جديد)|DREAM DONUT DIVIDER SQUISHIES 10 PCS(CTN x 200 PCS) New|4|P|0
+13012070|مقسم دريم دونات سكويشيز 20 حبة (جديد)|DREAM DONUT DIVIDER SQUISHIES 20 PCS(CTN x 100 Pcs) New|4|P|0
+13012028|علبة توست بريوش دانكن (كرتون × 300 حبة)|DUNKIN BRIOCHE TOAST BOX (C1X300PCS)|4|C|0
+13011022|أكواب كابتشينو 20 أونصة|CUPS.CAPPUCCINO CUPS 20OZ|0|K|1
+13023009|أكياس بطانة القهوة المثلجة|BAGS.ICED COFFEE LINER|5|C|0
+12011108|دونات شوكو فروستد كرانش|CHOCO FROSTED CRUNCH|15|P|0
+14014001|عصا ممسحة (أحمر / أخضر / أزرق)|DISPOSABLES MOPHEAD STICK RED GREEN BLUE|19|P|0
+12031004|مربعات قهوة بالشوكولاتة 35 جم|CHOCOLATE COFFEE SQUARES 35G|16|C|0
+14028004|منتج إيكولاب (باكيت 200 حبة)|ECOLAB CHEMICALS. (PKT 200 PCS)|20|K|0`;
+
+    const initProducts = RAW.split('\n').map((l,i)=>{
+      const [code,ar,en,c,u,m]=l.split('|');
+      return {id:'prod_'+(i+1),code,name_ar:ar,name_en:en,category:CATS[+c],mode:m==='1'?'detailed':'simple',qty:'',packs:'',pack_size:'',loose:'',unit:UN[u][0],unit_code:UN[u][1],unit_label:UN[u][2]};
+    });
+
+    /* ===== اللغة / Language ===== */
+    let LANG = (function(){ try { return localStorage.getItem('app_lang') || 'ar'; } catch(e) { return 'ar'; } })();
+    const L = (a, e) => LANG === 'en' ? e : a;
+    const LOC = () => LANG === 'en' ? 'en-US' : 'ar-EG';
+    const CAT_EN = {"أكواب ساخنة": "Hot Cups", "الأكواب الباردة": "Cold Cups", "أغطية الأكواب": "Cup Lids", "أغلفة وحوامل الأكواب": "Cup Sleeves & Carriers", "الصناديق والعلب": "Boxes", "أكياس التعبئة والتسوق": "Packaging & Shopping Bags", "قهوة وكبسولات": "Coffee & Capsules", "الشرابات والصلصات والبودرة": "Syrups, Sauces & Powders", "شاي ومشروبات": "Tea & Drinks", "أجبان وألبان": "Cheese & Dairy", "مياه وعصائر": "Water & Juices", "السكر والمحليات": "Sugar & Sweeteners", "مخبوزات وساندوتشات": "Bakery & Sandwiches", "كيك وكوكيز ومافن": "Cakes, Cookies & Muffins", "دونات فانسى ومميز": "Fancy & Specialty Donuts", "مونشكين ودونات عادي": "Munchkins & Regular Donuts", "وجبات خفيفة ومكسرات": "Snacks & Nuts", "دواجن ولحوم": "Poultry & Meat", "أكواب وتملبرات مبيعات": "Merchandise Mugs & Tumblers", "مستلزمات ونظافة": "Supplies & Cleaning", "المنظفات والمعقمات": "Detergents & Sanitizers", "قرطاسية وملصقات": "Stationery & Labels", "زي الموظفين (Uniform)": "Staff Uniform"};
+    const tc = c => LANG === 'en' ? (CAT_EN[c] || c) : c;
+    const pn = p => LANG === 'en' ? p.name_en : p.name_ar;
+    const ps = p => LANG === 'en' ? p.name_ar : p.name_en;
+    const TR = {
+"نظام إدارة وجرد المخزون الشامل": "Complete Inventory Management System",
+"إدارة وجرد المخزون": "Inventory Management",
+"ورقة الوردية": "Shift Sheet",
+"قائمة الطلب": "Order List",
+"تصفير كل الكميات": "Reset all quantities",
+"إضافة منتج": "Add Product",
+"ابحث برقم المنتج، الاسم بالعربي، أو بالإنجليزي...": "Search by code, Arabic or English name...",
+"جميع وحدات القياس": "All units",
+"كرتون (CTN)": "Carton (CTN)",
+"باكيت (PKT)": "Packet (PKT)",
+"حبة (PCS)": "Piece (PCS)",
+"المنتجات المسجلة في المخزون": "Products in stock",
+"أدخل الكمية المراد طلبها:": "Enter the quantity to order:",
+"مثال: 3": "e.g. 3",
+"إلغاء": "Cancel",
+"حفظ في القائمة": "Save to list",
+"تصفير جميع الكميات؟": "Reset all quantities?",
+"هل أنت متأكد أنك تريد مسح وتصفير جميع الأرقام المدخلة في الجرد؟ (ورقة الوردية المحفوظة لن تتأثر)": "Are you sure you want to clear all numbers entered in the count? (Saved shift sheets are not affected)",
+"نعم، صَفِّر": "Yes, reset",
+"إضافة منتج جديد": "Add New Product",
+"رقم المنتج (الكود) *": "Product code *",
+"مثال: 13011011": "e.g. 13011011",
+"اسم المنتج (عربي) *": "Product name (Arabic) *",
+"اسم المنتج (إنجليزي) *": "Product name (English) *",
+"تصنيف المجموعة *": "Category *",
+"نوع الوحدة *": "Unit type *",
+"كرتون": "Carton",
+"باكيت": "Packet",
+"حبة": "pcs",
+"طريقة الجرد الافتراضية *": "Default counting method *",
+"جرد بسيط ومباشر (كرتون أو حبة فقط)": "Simple direct count (cartons or pieces only)",
+"جرد مركب تفصيلي (باكيتات + حبات مفرطة)": "Detailed count (packets + loose pieces)",
+"حفظ المنتج": "Save Product",
+"قائمة طلبات الغد": "Tomorrow's Order List",
+"إغلاق": "Close",
+"نسخ القائمة للطلب": "Copy list for ordering",
+"الأيام المحفوظة": "Saved days",
+"واتساب": "WhatsApp",
+"طباعة / PDF": "Print / PDF",
+"نسخ احتياطي": "Backup",
+"استرجاع": "Restore",
+"مسح هذه الورقة": "Clear this sheet",
+"الاستلام": "Receive",
+"التسليم": "Handover",
+"Date / التاريخ": "Date",
+"Shift / الوردية": "Shift",
+"كل ما تكتبه أو تسحبه يُحفظ تلقائياً باليوم والوردية. العمود المربوط (🔗) يتزامن مباشرة مع صفحة المنتج وبالعكس، وأعمدة Transfer In/Out للتسجيل فقط ولا تغيّر رصيد المنتج. الأصناف المظللة بالأصفر ليس لها منتج مطابق في الجرد.": "Everything you type or pull is saved automatically by day and shift. The linked column (🔗) syncs live with the product page and vice versa; Transfer In/Out columns are for recording only and do not change product stock. Rows highlighted in yellow have no matching product in the count.",
+"تمت إزالة المنتج من قائمة الطلبات.": "Product removed from the order list.",
+"قائمة الطلبات فارغة حالياً. اضغط على زر (طلب) في أي منتج لتحديد الكمية المطلوبة!": "The order list is empty. Tap the Order button on any product to set the quantity!",
+"القائمة فارغة!": "The list is empty!",
+"تم نسخ قائمة الطلبات بالكميات بنجاح! يمكنك لصقها في الواتساب الآن.": "Order list copied! You can paste it into WhatsApp now.",
+"أدخل سعة الباكيت": "Enter packet size",
+"الكل": "All",
+"لا توجد نتائج مطابقة!": "No matching results!",
+"الرصيد الكلي": "Total balance",
+"جرد مباشر": "Direct count",
+"عدد الباكيتات:": "Packets:",
+"حبات في الباكيت:": "Pieces per packet:",
+"اكتب السعة": "Enter size",
+"حبات مفرطة:": "Loose pieces:",
+"الإجمالي الفعلي": "Actual total",
+"تفصيلي": "Detailed",
+"بسيط": "Simple",
+"طلب": "Order",
+"سحب الاستلام من الجرد": "Pull Receive from count",
+"سحب التسليم من الجرد": "Pull Handover from count",
+"إعادة سحب التسليم": "Re-pull Handover",
+"إعادة سحب الاستلام": "Re-pull Receive",
+"تأكيد الاستلام": "Confirm Receive",
+"تأكيد التسليم": "Confirm Handover",
+"حفظ نهائي": "Final Save",
+"الجرد الشهري": "Monthly Count",
+"حفظ الجرد الشهري": "Save monthly count",
+"الجرد المحفوظ": "Saved counts",
+"الجرد الحالي": "Current count",
+"Stock Take List / رقم القائمة": "Stock Take List",
+"Cost Center / مركز التكلفة": "Cost Center",
+"مسح أعداد هذه الورقة فقط (هذا اليوم والوردية)؟ الأيام الأخرى والجرد لن يتأثروا.": "Clear the numbers of this sheet only (this day and shift)? Other days and the count are not affected.",
+"فتح": "Open",
+"حذف": "Delete",
+"لا توجد أيام محفوظة بعد.": "No saved days yet.",
+"حذف هذا اليوم نهائياً؟": "Delete this day permanently?",
+"تم إنشاء النسخة الاحتياطية، ونُسخت أيضاً إلى الحافظة. الصقها في ملف نصي للاحتفاظ بها.": "Backup created and also copied to the clipboard. Paste it into a text file to keep it.",
+"تم إنشاء النسخة الاحتياطية.": "Backup created.",
+"سيتم استبدال كل البيانات الحالية بالنسخة المحفوظة. متابعة؟": "All current data will be replaced with the saved backup. Continue?",
+"الملف غير صالح.": "Invalid file."
+};
+    const AR_RE = /[\u0600-\u06FF]/;
+    function tr(s) {
+      if (LANG !== 'en' || typeof s !== 'string') return s;
+      const key = s.trim();
+      if (TR[key] !== undefined) return s.replace(key, () => TR[key]);
+      const m = key.match(/^([^\u0600-\u06FFA-Za-z0-9]*)([\s\S]*)$/);
+      if (m && m[1] && TR[m[2]] !== undefined) return s.replace(key, () => m[1] + TR[m[2]]);
+      return s;
+    }
+    const ORIG = new WeakMap();
+    function trText(n) {
+      const pr = n.parentNode; if (pr && (pr.nodeName === 'SCRIPT' || pr.nodeName === 'STYLE')) return;
+      const v = n.nodeValue;
+      if (LANG === 'en') { if (!AR_RE.test(v)) return; const t = tr(v); if (t !== v) { ORIG.set(n, v); n.nodeValue = t; } }
+      else if (ORIG.has(n)) { n.nodeValue = ORIG.get(n); ORIG.delete(n); }
+    }
+    function trAttrs(el) {
+      ['placeholder', 'title'].forEach(a => {
+        const dk = 'ar' + a;
+        if (LANG === 'en') { const v = el.getAttribute(a); if (v && AR_RE.test(v)) { const t = tr(v); if (t !== v) { el.dataset[dk] = v; el.setAttribute(a, t); } } }
+        else if (el.dataset && el.dataset[dk] !== undefined) { el.setAttribute(a, el.dataset[dk]); delete el.dataset[dk]; }
+      });
+    }
+    function trTree(root) {
+      if (root.nodeType === 3) { trText(root); return; }
+      if (root.nodeType !== 1) return;
+      const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n;
+      while ((n = w.nextNode())) trText(n);
+      trAttrs(root); root.querySelectorAll('[placeholder],[title]').forEach(trAttrs);
+    }
+    const _alert = window.alert.bind(window), _confirm = window.confirm.bind(window);
+    window.alert = m => _alert(tr(String(m)));
+    window.confirm = m => _confirm(tr(String(m)));
+    function setLang(l) {
+      LANG = l; try { localStorage.setItem('app_lang', l); } catch(e) {}
+      document.documentElement.lang = l; document.documentElement.dir = l === 'en' ? 'ltr' : 'rtl';
+      document.title = L('نظام إدارة وجرد المخزون الشامل', 'Complete Inventory Management System');
+      document.getElementById('langBtn').textContent = l === 'en' ? 'ع' : 'EN';
+      trTree(document.body);
+      buildCategoryTabs(); buildAddModalCategories(); renderProducts(); updateCartBadge();
+      if (document.getElementById('orderModal').style.display === 'flex') openOrderModal();
+      if (cur && document.getElementById('ssModal').style.display === 'flex') ssRefresh();
+      if (document.getElementById('mnModal').style.display === 'flex') mnRender();
+      trTree(document.body);
+    }
+    function toggleLang() { setLang(LANG === 'en' ? 'ar' : 'en'); }
+
+    const catMeta = {"أكواب ساخنة":{bd:"#cbd5e1",bg:"#ffffff",icon:"☕"},"الأكواب الباردة":{bd:"#94a3b8",bg:"#f1f5f9",icon:"🩶"},"أغطية الأكواب":{bd:"#93c5fd",bg:"#eff6ff",icon:"🟦"},"أغلفة وحوامل الأكواب":{bd:"#d6b98a",bg:"#fffbeb",icon:"🟫"},"الصناديق والعلب":{bd:"#fdba74",bg:"#fff7ed",icon:"📦"},"أكياس التعبئة والتسوق":{bd:"#d6d3d1",bg:"#f5f5f4",icon:"🛍️"},"قهوة وكبسولات":{bd:"#6ee7b7",bg:"#ecfdf5",icon:"🟢"},"الشرابات والصلصات والبودرة":{bd:"#d8b4fe",bg:"#faf5ff",icon:"🟣"},"شاي ومشروبات":{bd:"#5eead4",bg:"#f0fdfa",icon:"🍵"},"أجبان وألبان":{bd:"#fde047",bg:"#fefce8",icon:"🥛"},"مياه وعصائر":{bd:"#67e8f9",bg:"#ecfeff",icon:"💧"},"السكر والمحليات":{bd:"#fda4af",bg:"#fff1f2",icon:"🍬"},"مخبوزات وساندوتشات":{bd:"#fcd34d",bg:"#fffbeb",icon:"🥐"},"كيك وكوكيز ومافن":{bd:"#facc15",bg:"#fefce8",icon:"🧁"},"دونات فانسى ومميز":{bd:"#f9a8d4",bg:"#fdf2f8",icon:"🍩"},"مونشكين ودونات عادي":{bd:"#fdba74",bg:"#fff7ed",icon:"🍩"},"وجبات خفيفة ومكسرات":{bd:"#bef264",bg:"#f7fee7",icon:"🥜"},"دواجن ولحوم":{bd:"#fca5a5",bg:"#fef2f2",icon:"🥩"},"أكواب وتملبرات مبيعات":{bd:"#a5b4fc",bg:"#eef2ff",icon:"🥤"},"مستلزمات ونظافة":{bd:"#cbd5e1",bg:"#f1f5f9",icon:"🥢"},"المنظفات والمعقمات":{bd:"#facc15",bg:"#fef9c3",icon:"🟡"},"قرطاسية وملصقات":{bd:"#d8b4fe",bg:"#faf5ff",icon:"🏷️"},"زي الموظفين (Uniform)":{bd:"#64748b",bg:"#e2e8f0",icon:"👕"}};
+
+    let localProducts = (function(){try{return JSON.parse(localStorage.getItem('inventory_all_255_v1'))||initProducts;}catch(e){return initProducts;}})();
+    // ترحيل الأكواد القديمة إلى أكواد Oracle (بدون فقد الكميات)
+    (function(){
+      const RN = { 'DD-OPR-TUM-GYM-00001': ['12051005','GYM SILICON R BLACK 600ML','مطارة ماء رياضية سيليكون سوداء 600 مل'], 'TUM-000038': ['12051045','TUMBLER.DD STAINLESS MUG ( BLACK AND WHITE)','ماج دانكن ستانلس (أسود وأبيض)'],
+      'MRC-000002': ["12051048", "MERCHANDISE.BUTTON SLEEVE", "غلاف زر (Button Sleeve)"],
+      'MRC-000003': ["12051049", "MERCHANDISE.WELCRO SLEEVE", "غلاف فيلكرو (Welcro Sleeve)"],
+      'MRC-000004': ["12051050", "MERCHANDISE TRIPLE DRIPPER AND SS HOLDER", "حامل ثلاثي للتقطير مع حامل ستانلس"],
+      'TUM-000031': ["12051041", "TUMBLER.CHOCOLAR TUMBLER DD - IVORY", "تملبر شوكولار دانكن عاجي"],
+      'DD-OPR-TUM-GYM-00003': ["12051007", "GYM SILICON L BLACK 2LTR", "مطارة ماء رياضية سيليكون سوداء 2 لتر"],
+      'DD-OPR-TUM-PMP-00001': ["12051009", "PILMOA PREMIUM BLACK 473ML", "كوب بيلموا بريميوم أسود 473 مل"] };
+      localProducts.forEach(x => { const r = RN[x.code]; if (r && !localProducts.some(y => y.code === r[0])) { x.code = r[0]; x.name_en = r[1]; x.name_ar = r[2]; } });
+    })();
+    // إضافة أي منتج جديد مدمج (مثل أصناف الورقة) إلى البيانات المحفوظة سابقاً بدون المساس بالكميات
+    (function(){
+      let added = false;
+      initProducts.forEach(p => { if (!localProducts.some(x => x.code === p.code)) { localProducts.push(p); added = true; } });
+      if (added) { try { localStorage.setItem('inventory_all_255_v1', JSON.stringify(localProducts)); } catch(e) {} }
+    })();
+    let selectedCat = 'ALL';
+    let orderQuantities = (function(){try{return JSON.parse(localStorage.getItem('order_qtys_v1'))||{};}catch(e){return {};}})();
+    let promptTargetId = null;
+
+    const container = document.getElementById('productsContainer');
+    const tabsContainer = document.getElementById('categoryTabs');
+    const searchInp = document.getElementById('searchInput');
+    const unitFlt = document.getElementById('unitFilter');
+
+    function initApp() {
+      buildCategoryTabs(); buildAddModalCategories(); renderProducts(); updateCartBadge();
+      searchInp.addEventListener('input', renderProducts);
+      unitFlt.addEventListener('change', renderProducts);
+      try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e) {}
+      new MutationObserver(ms => { if (LANG !== 'en') return; ms.forEach(m => m.addedNodes.forEach(trTree)); }).observe(document.documentElement, { childList: true, subtree: true });
+      if (LANG === 'en') setLang('en'); else document.getElementById('langBtn').textContent = 'EN';
+    }
+    function saveData() { try { localStorage.setItem('inventory_all_255_v1', JSON.stringify(localProducts)); } catch(e) {} }
+    function saveOrderQtys() { try { localStorage.setItem('order_qtys_v1', JSON.stringify(orderQuantities)); } catch(e) {} }
+
+    function openPromptModal(id) {
+      promptTargetId = id;
+      const prod = localProducts.find(p => p.id === id); if(!prod) return;
+      document.getElementById('promptProdName').innerText = pn(prod);
+      document.getElementById('promptProdUnit').innerText = `${L('الوحدة','Unit')}: ${tr(prod.unit_label)} (#${prod.code})`;
+      const inputEl = document.getElementById('promptQtyInput');
+      inputEl.value = orderQuantities[id] !== undefined ? orderQuantities[id] : '';
+      document.getElementById('promptModal').style.display = 'flex';
+      setTimeout(() => { inputEl.focus(); inputEl.select(); }, 100);
+    }
+    function closePromptModal() { document.getElementById('promptModal').style.display = 'none'; promptTargetId = null; }
+    function confirmOrderPrompt() {
+      if(!promptTargetId) return;
+      const val = parseInt(document.getElementById('promptQtyInput').value, 10);
+      if(isNaN(val) || val <= 0) { delete orderQuantities[promptTargetId]; alert('تمت إزالة المنتج من قائمة الطلبات.'); }
+      else { orderQuantities[promptTargetId] = val; alert(L(`تم تحديد الكمية (${val}) بنجاح! 🛒`, `Quantity (${val}) set successfully! 🛒`)); }
+      saveOrderQtys(); updateCartBadge(); renderProducts(); closePromptModal();
+    }
+    function updateCartBadge() {
+      const badge = document.getElementById('cartBadge'); const count = Object.keys(orderQuantities).length;
+      if(badge) { badge.innerText = count; badge.classList.toggle('hidden', count === 0); }
+    }
+    function openOrderModal() {
+      const modal = document.getElementById('orderModal'); const lc = document.getElementById('orderListContainer'); lc.innerHTML = '';
+      const keys = Object.keys(orderQuantities);
+      if(keys.length === 0) lc.innerHTML = `<div class="py-12 text-center text-slate-400 font-bold">قائمة الطلبات فارغة حالياً. اضغط على زر (طلب) في أي منتج لتحديد الكمية المطلوبة!</div>`;
+      else keys.forEach(id => {
+        const p = localProducts.find(prod => prod.id === id); if(!p) return;
+        const d = document.createElement('div');
+        d.className = 'flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl p-3 mb-2.5';
+        d.innerHTML = `<div class="flex-1 pr-2"><div class="flex items-center gap-2 mb-1"><span class="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">#${p.code}</span><span class="text-xs font-bold text-slate-500">${p.unit_label}</span></div><h5 class="text-sm font-extrabold text-slate-800">${pn(p)}</h5><p class="text-[11px] font-sans text-slate-400" dir="${LANG==='en'?'rtl':'ltr'}">${ps(p)}</p></div>
+          <div class="flex items-center gap-2"><div class="bg-amber-100 text-amber-950 font-black px-3 py-1.5 rounded-xl text-sm font-sans">${L('الطلب','Order')}: ${orderQuantities[id]}</div><button onclick="deleteFromOrder('${p.id}'); openOrderModal();" class="text-red-500 hover:bg-red-50 p-2 rounded-xl transition"><span class="text-base">🗑</span></button></div>`;
+        lc.appendChild(d);
+      });
+      modal.style.display = 'flex'; document.body.style.overflow = 'hidden';
+    }
+    function deleteFromOrder(id) { delete orderQuantities[id]; saveOrderQtys(); updateCartBadge(); renderProducts(); }
+    function closeOrderModal() { document.getElementById('orderModal').style.display = 'none'; document.body.style.overflow = 'auto'; }
+    function copyOrderText() {
+      const keys = Object.keys(orderQuantities);
+      if(keys.length === 0) { alert('القائمة فارغة!'); return; }
+      let text = L("📋 قائمة طلبات بضاعة الغد:\n\n", "📋 Tomorrow's order list:\n\n");
+      keys.forEach((id, i) => {
+        const p = localProducts.find(prod => prod.id === id);
+        if(p) text += `${i+1}. [${p.code}] ${pn(p)}\n   👈 ${L('الكمية المطلوبة','Quantity needed')}: ${orderQuantities[id]} (${tr(p.unit_label)})\n\n`;
+      });
+      try { navigator.clipboard.writeText(text); } catch(e) {}
+      alert('تم نسخ قائمة الطلبات بالكميات بنجاح! يمكنك لصقها في الواتساب الآن.');
+    }
+
+    function toggleMode(id) { const prod = localProducts.find(p => p.id === id); if(prod) { prod.mode = prod.mode === 'detailed' ? 'simple' : 'detailed'; saveData(); syncSheetFromProduct(prod); renderProducts(); } }
+    function handleDirectInput(id, field, el) {
+      const prod = localProducts.find(p => p.id === id);
+      if(prod) { const raw = el.value.trim(); prod[field] = raw === '' ? '' : parseInt(raw, 10) || 0; saveData(); updateCardTotal(prod); syncSheetFromProduct(prod); }
+    }
+    function stepField(id, field, change) {
+      const prod = localProducts.find(p => p.id === id);
+      if(prod) {
+        let next = (parseInt(prod[field], 10) || 0) + change; if(next < 0) next = 0;
+        prod[field] = next; saveData(); syncSheetFromProduct(prod);
+        const inputEl = document.getElementById(`${field}_${prod.id}`); if(inputEl) inputEl.value = next;
+        updateCardTotal(prod);
+      }
+    }
+    function updateCardTotal(prod) {
+      if(prod.mode === 'simple') {
+        const qtyVal = parseInt(prod.qty, 10) || 0; const el = document.getElementById(`total_${prod.id}`);
+        if(el) el.innerHTML = `${qtyVal.toLocaleString(LOC())} <span class="text-[10px] text-white font-normal">${prod.unit_label}</span>`;
+      } else {
+        const packs = parseInt(prod.packs, 10) || 0, packSize = parseInt(prod.pack_size, 10) || 0, loose = parseInt(prod.loose, 10) || 0;
+        let total = 0, formulaText = '';
+        if(packs > 0 && packSize > 0) { total = packs * packSize + loose; formulaText = `(${packs} × ${packSize}) + ${loose}`; }
+        else if(packs > 0) { total = loose; formulaText = `أدخل سعة الباكيت`; }
+        else { total = loose; formulaText = `${loose} ${L('حبة','pcs')}`; }
+        const el = document.getElementById(`total_${prod.id}`);
+        if(el) el.innerHTML = `${total.toLocaleString(LOC())} <span class="text-[10px] text-white font-normal">حبة</span>`;
+        const f = document.getElementById(`formula_${prod.id}`); if(f) f.innerText = formulaText;
+      }
+    }
+    function getMeta(catName) { return catMeta[catName] || { bd: '#cbd5e1', bg: '#ffffff', icon: '🏷️' }; }
+
+    const TAB_OFF = 'tab-btn whitespace-nowrap px-3.5 py-2 rounded-xl text-xs md:text-sm font-bold transition-all bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 flex items-center gap-1.5';
+    const TAB_ON = 'tab-btn whitespace-nowrap px-3.5 py-2 rounded-xl text-xs md:text-sm font-bold transition-all bg-slate-900 text-white shadow-md border border-transparent flex items-center gap-1.5';
+    function buildCategoryTabs() {
+      const cats = Array.from(new Set(localProducts.map(p => p.category))); tabsContainer.innerHTML = '';
+      const allBtn = document.createElement('button'); allBtn.className = TAB_ON;
+      allBtn.innerHTML = `الكل <span class="bg-white/20 px-1.5 rounded-md ml-1 text-xs">${localProducts.length}</span>`;
+      allBtn.onclick = () => filterByCategory('ALL', allBtn); tabsContainer.appendChild(allBtn);
+      cats.forEach(cat => {
+        const count = localProducts.filter(p => p.category === cat).length;
+        const btn = document.createElement('button'); btn.className = TAB_OFF; btn.dataset.cat = cat;
+        btn.innerHTML = `${getMeta(cat).icon} ${tc(cat)} <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md ml-1 text-[11px] border border-slate-200">${count}</span>`;
+        btn.onclick = () => filterByCategory(cat, btn); tabsContainer.appendChild(btn);
+      });
+      Array.from(tabsContainer.children).forEach(b => { b.className = ((b.dataset.cat || 'ALL') === selectedCat) ? TAB_ON : TAB_OFF; });
+    }
+    function filterByCategory(cat, activeBtn) {
+      selectedCat = cat;
+      document.querySelectorAll('.tab-btn').forEach(b => b.className = TAB_OFF);
+      activeBtn.className = TAB_ON; renderProducts();
+    }
+
+    function renderProducts() {
+      const term = searchInp.value.toLowerCase().trim(); const unit = unitFlt.value;
+      const filtered = localProducts.filter(p => {
+        const mS = p.name_ar.toLowerCase().includes(term) || p.name_en.toLowerCase().includes(term) || p.code.includes(term);
+        return mS && (selectedCat === 'ALL' || p.category === selectedCat) && (unit === 'ALL' || p.unit_code === unit);
+      });
+      document.getElementById('resultsCount').innerText = filtered.length;
+      document.getElementById('totalLbl').textContent = L(`شامل جميع المنتجات (${localProducts.length} صنف)`, `All products (${localProducts.length} items)`); container.innerHTML = '';
+      if (filtered.length === 0) { container.innerHTML = `<div class="col-span-full py-16 text-center text-slate-400 bg-white rounded-3xl border border-dashed border-slate-300"><h3 class="text-lg font-bold text-slate-700">لا توجد نتائج مطابقة!</h3></div>`; return; }
+
+      filtered.forEach(p => {
+        const meta = getMeta(p.category); const isDetailed = p.mode === 'detailed'; const hasOrder = orderQuantities[p.id] !== undefined;
+        let inputsHtml = '';
+        if (!isDetailed) {
+          const qtyVal = parseInt(p.qty, 10) || 0;
+          inputsHtml = `
+            <div class="flex items-center justify-between bg-white/80 border border-black/10 rounded-xl p-2 shadow-sm">
+              <span class="text-xs font-bold text-slate-700 pr-1 flex items-center gap-1"><span class="text-blue-600 text-base">🏷</span> ${L('العدد المتوفر','Available')} (${tr(p.unit_label)}):</span>
+              <div class="flex items-center gap-1.5">
+                <button onclick="stepField('${p.id}', 'qty', -1)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 font-bold flex items-center justify-center text-sm active:scale-95 transition"><span>−</span></button>
+                <input type="number" inputmode="numeric" id="qty_${p.id}" value="${p.qty !== undefined ? p.qty : ''}" placeholder="0" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'qty', this)" class="card-input w-16 bg-white border border-slate-300 text-slate-900 text-lg">
+                <button onclick="stepField('${p.id}', 'qty', 1)" class="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center justify-center text-sm active:scale-95 transition shadow-sm"><span>+</span></button>
+              </div>
+            </div>
+            <div class="bg-slate-900 text-white p-2.5 rounded-xl shadow-md flex items-center justify-between">
+              <div><span class="text-[10px] font-bold text-slate-400 block leading-none">الرصيد الكلي</span><span class="text-[10px] text-emerald-400 font-bold">جرد مباشر</span></div>
+              <span class="text-base font-black font-sans text-amber-300" id="total_${p.id}">${qtyVal.toLocaleString(LOC())} <span class="text-[10px] text-white font-normal">${p.unit_label}</span></span>
+            </div>`;
+        } else {
+          const packs = parseInt(p.packs, 10) || 0, packSize = parseInt(p.pack_size, 10) || 0, loose = parseInt(p.loose, 10) || 0;
+          let total = 0, formulaText = '';
+          if(packs > 0 && packSize > 0) { total = packs * packSize + loose; formulaText = `(${packs} × ${packSize}) + ${loose}`; }
+          else if(packs > 0) { total = loose; formulaText = `أدخل سعة الباكيت`; }
+          else { total = loose; formulaText = `${loose} ${L('حبة','pcs')}`; }
+          inputsHtml = `
+            <div class="flex items-center justify-between bg-white/80 border border-black/10 rounded-xl p-1.5 shadow-sm">
+              <span class="text-xs font-bold text-slate-700 pr-1 flex items-center gap-1"><span class="text-blue-600 text-sm">📦</span> عدد الباكيتات:</span>
+              <div class="flex items-center gap-1">
+                <button onclick="stepField('${p.id}', 'packs', -1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-red-50 text-slate-600 font-bold flex items-center justify-center text-xs"><span>−</span></button>
+                <input type="number" inputmode="numeric" id="packs_${p.id}" value="${p.packs !== undefined ? p.packs : ''}" placeholder="0" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'packs', this)" class="card-input w-14 bg-white border border-slate-300 text-slate-900">
+                <button onclick="stepField('${p.id}', 'packs', 1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-600 font-bold flex items-center justify-center text-xs"><span>+</span></button>
+              </div>
+            </div>
+            <div class="flex items-center justify-between bg-amber-50/90 border border-amber-300/80 rounded-xl p-1.5 shadow-sm">
+              <span class="text-xs font-bold text-amber-900 pr-1 flex items-center gap-1"><span class="text-amber-600 text-sm">▦</span> حبات في الباكيت:</span>
+              <div class="flex items-center pl-0.5"><input type="number" inputmode="numeric" id="pack_size_${p.id}" value="${p.pack_size !== undefined ? p.pack_size : ''}" placeholder="اكتب السعة" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'pack_size', this)" class="card-input w-24 bg-white border border-amber-300 text-amber-900"></div>
+            </div>
+            <div class="flex items-center justify-between bg-white/80 border border-black/10 rounded-xl p-1.5 shadow-sm">
+              <span class="text-xs font-bold text-slate-700 pr-1 flex items-center gap-1"><span class="text-emerald-600 text-sm">📚</span> حبات مفرطة:</span>
+              <div class="flex items-center gap-1">
+                <button onclick="stepField('${p.id}', 'loose', -1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-red-50 text-slate-600 font-bold flex items-center justify-center text-xs"><span>−</span></button>
+                <input type="number" inputmode="numeric" id="loose_${p.id}" value="${p.loose !== undefined ? p.loose : ''}" placeholder="0" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'loose', this)" class="card-input w-14 bg-white border border-slate-300 text-slate-900">
+                <button onclick="stepField('${p.id}', 'loose', 1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-600 font-bold flex items-center justify-center text-xs"><span>+</span></button>
+              </div>
+            </div>
+            <div class="bg-slate-900 text-white p-2.5 rounded-xl shadow-md flex items-center justify-between">
+              <div><span class="text-[10px] font-bold text-slate-400 block leading-none">الإجمالي الفعلي</span><span class="text-[10px] text-amber-400 font-mono" id="formula_${p.id}">${formulaText}</span></div>
+              <span class="text-base font-black font-sans text-amber-300" id="total_${p.id}">${total.toLocaleString(LOC())} <span class="text-[10px] text-white font-normal">حبة</span></span>
+            </div>`;
+        }
+        const card = document.createElement('div');
+        card.className = `rounded-2xl p-3.5 md:p-4 border transition-all hover:shadow-lg flex flex-col justify-between h-full relative`;
+        card.style.cssText = `border-color:${meta.bd};background:${meta.bg}`;
+        card.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex items-center gap-1.5 cursor-pointer" onclick="copyCode('${p.code}')"><span class="text-xs font-mono font-black bg-white/90 border border-black/10 px-2 py-0.5 rounded-md text-slate-800 shadow-sm">#${p.code}</span></div>
+              <div class="flex items-center gap-1">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md unit-badge-${p.unit_code} shadow-sm">${p.unit_label}</span>
+                <button onclick="toggleMode('${p.id}')" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md border border-black/10 bg-white/90 text-slate-600 flex items-center gap-0.5 shadow-sm"><span class="text-blue-600">🔄</span> ${isDetailed ? 'تفصيلي' : 'بسيط'}</button>
+                <button onclick="openPromptModal('${p.id}')" class="text-xs px-2.5 py-1 rounded-md border transition ${hasOrder ? 'bg-blue-600 text-white border-blue-600 shadow-sm font-bold' : 'bg-white/90 text-slate-600 border-black/10'}"><span class="text-sm">🛒</span> ${hasOrder ? orderQuantities[p.id] : 'طلب'}</button>
+              </div>
+            </div>
+            <h4 class="text-[14px] font-extrabold mb-0.5 leading-snug text-slate-900">${pn(p)}</h4>
+            <p class="text-[11px] font-sans font-semibold opacity-70 leading-tight line-clamp-1 mb-3" dir="${LANG==='en'?'rtl':'ltr'}">${ps(p)}</p>
+          </div>
+          <div class="mt-auto space-y-2 pt-2 border-t border-black/5">${inputsHtml}</div>`;
+        container.appendChild(card);
+      });
+    }
+
+    function copyCode(code) { try { navigator.clipboard.writeText(code); } catch(e) {} alert(L('تم نسخ الكود: ', 'Code copied: ') + code); }
+
+    const aModal = document.getElementById('addModal');
+    function buildAddModalCategories() {
+      const sel = document.getElementById('newCategory'); sel.innerHTML = '';
+      Array.from(new Set(localProducts.map(p => p.category))).forEach(c => { const o = document.createElement('option'); o.value = c; o.innerText = `${getMeta(c).icon} ${tc(c)}`; sel.appendChild(o); });
+    }
+    function openAddModal() { document.getElementById('addProductForm').reset(); aModal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+    function closeAddModal() { aModal.style.display = 'none'; document.body.style.overflow = 'auto'; }
+    function saveNewProduct() {
+      const form = document.getElementById('addProductForm'); if (!form.checkValidity()) { form.reportValidity(); return; }
+      const unitFull = document.getElementById('newUnit').value; const cat = document.getElementById('newCategory').value;
+      const key = unitFull.includes('CTN') ? 'C' : unitFull.includes('PKT') ? 'K' : 'P';
+      localProducts.unshift({ id: 'prod_custom_' + Date.now(), code: document.getElementById('newCode').value.trim(), name_ar: document.getElementById('newNameAr').value.trim(), name_en: document.getElementById('newNameEn').value.trim(), category: cat, mode: document.getElementById('newMode').value, qty: '', packs: '', pack_size: '', loose: '', unit: UN[key][0], unit_code: UN[key][1], unit_label: UN[key][2] });
+      saveData(); closeAddModal(); buildCategoryTabs();
+      tabsContainer.querySelectorAll('.tab-btn').forEach(t => { if(t.dataset.cat === cat) filterByCategory(cat, t); });
+    }
+
+    const rModal = document.getElementById('resetModal');
+    function openResetModal() { rModal.style.display = 'flex'; }
+    function closeResetModal() { rModal.style.display = 'none'; }
+    function resetAllStock() {
+      localProducts.forEach(p => { p.qty = ''; p.packs = ''; p.pack_size = ''; p.loose = ''; });
+      orderQuantities = {}; saveOrderQtys(); saveData(); db.active = null; ssSave(); renderProducts(); updateCartBadge(); closeResetModal();
+    }
+
+    /* =====================================================================
+       ورقة تسليم واستلام الوردية — محفوظة باليوم والوردية
+       ===================================================================== */
+    const SS_KEY = 'shift_sheets_v2';
+    // [القسم, كود الورقة, الاسم (كما في الورقة), كود المنتج في الجرد (فارغ = يدوي), UOM]
+    const SS_ROWS = [
+      ['Cups','CUP-000019','D/W Coffee & Tea Cups 9oz','13011013'],
+      ['Cups','CUP-000016','D/W Coffee & Tea Cups 10oz','13011011'],
+      ['Cups','CUP-000017','D/W Coffee & Tea Cups 14oz','13011012'],
+      ['Cups','CUP-000020','D/W Coffee & Tea Cups 16oz','13011014'],
+      ['Cups','CUP-000021','D/W Coffee & Tea Cups 20oz','13011015'],
+      ['Cups','CUP-000013','Espresso cups 4oz','13011010'],
+      ['Cups','CUP-000025','D/W Cappuccino Cup 12oz','13011019'],
+      ['Cups','CUP-000023','D/W Cappuccino Cup 16oz','13011017'],
+      ['Cups','CUP-000024','D/W Cappuccino Cup 20oz','13011018'],
+      ['Cups','CUP-000015','Cold Cup Clear Plastic -12oz','13021005'],
+      ['Cups','CUP-000011','Cold Cups Plastic 16oz','13021002'],
+      ['Cups','CUP-000012','Cold Cups Plastic 24oz','13021003'],
+      ['Cups','CUP-000018','Cold Cups Plastic 32oz','13021006'],
+      ['Merchandise','MRC-000002','Button Sleeve','12051048'],
+      ['Merchandise','MRC-000003','Welcro Sleeve','12051049'],
+      ['Merchandise','MRC-000004','Triple Dripper & SS Holder','12051050'],
+      ['Merchandise','MRC-000006','Vacuum Mug 480ml','12051014'],
+      ['Merchandise','MUG-000001','Ceramic Sprinkles Appear Mug 16oz',''],
+      ['Merchandise','TUM-000030','Chocolar Tumbler DD - Black','12051040'],
+      ['Merchandise','TUM-000031','Chocolar Tumbler DD - Ivory','12051041'],
+      ['Merchandise','TUM-000038','DD Stainless Mug( Black / White)','12051045'],
+      ['Merchandise','TUM-000039','New Dunkin Mug Regular','12051052'],
+      ['Merchandise','TUM-000041','Hydration Bottles 500 ML',''],
+      ['Merchandise','DD-OPR-TUM-GYM-00001','Gym Silicon - R Black 600ml','12051005'],
+      ['Merchandise','DD-OPR-TUM-GYM-00002','Gym Silicon - R White 600ml','12051006'],
+      ['Merchandise','DD-OPR-TUM-GYM-00003','Gym Silicon - L Black 2Ltr','12051007'],
+      ['Merchandise','DD-OPR-TUM-GYM-00004','Gym Silicon - L Orange 2Ltr','12051008'],
+      ['Merchandise','DD-OPR-TUM-PMP-00001','Pilmoa Premium - Black 473ml','12051009'],
+      ['Merchandise','DD-OPR-TUM-PMP-00002','Pilmoa Premium - White 473ml','12051010'],
+      ['Merchandise','DD-OPR-TUM-PMP-00003','Pilmoa Premium - Sus 473ml','12051011'],
+      ['Merchandise','DD-OPR-TUM-PMP-00004','Pilmoa Premium - Orange 473ml','12051012'],
+      ['Coffee','COF-000001','DD Coffee Beans Bag 5 Lbs','10011001'],
+      ['Coffee','COF-000002','Espresso Beans Bag 01 Kg','10013001'],
+      ['Coffee','COF-000003','DD Coffee Grounds Bag 01 Lbs','10011002'],
+      ['Coffee','COF-000004','DD Dark Roast Grounds Bag 01 Lbs','10012001'],
+      ['Coffee','COF-000005','DD Decaf Coffee Grounds Bag 01 Lbs','10014001'],
+      ['Coffee','COF-000012','Signature Blend Espresso (10caps)','10015001'],
+      ['Coffee','COF-000013','Light Roast Espresso (10caps)',''],
+      ['Coffee','COF-000014','Bold Roast Espresso (10 caps)','10015003'],
+      ['Coffee','MLK-000002','Milk. Milk 01 ltr','10021001'],
+      ['Tea','TEA-000005','Boldbreakfast Black Tea (1x15 /box)','10131001'],
+      ['Grab & Go','WTR-000004','Evian Water Bottle 500 ml','12041002'],
+      ['Grab & Go','WTR-000006','Nova Water Bottle 330 ml','12041003'],
+      ['Grab & Go','WTR-000013','Evian Sparkling Water Can 24 X 0.33L','12041004'],
+      ['Grab & Go','JUC-000005','CHERRY JUICE 300ML','12043002'],
+      ['Grab & Go','JUC-000006','ORANGE JUICE 300 ML','12043003'],
+      ['Grab & Go','JUC-000007','MANGO JUICE 300ML','12043004'],
+      ['Boxes','BOX-000011','Box o Joe (Dunkin Box 112 Oz)','13012010'],
+      ['Boxes','BOX-000020','Box o Joe(Dunkin Box 40oz)','13012018'],
+      ['Boxes','BOX-000021','Box o Joe(Dunkin Box 20oz)','13012019'],
+      ['Boxes','BOX-000022','Box o Joe(Orange Box 40oz)','13012020'],
+      ['Boxes','DD-OPR-ACC-ISI-00002','ISI N2O CREAM CHARGER IS-0703 (BOX-10PCS)','99021099','Pack'],
+      ['Sandwich','SND-000001','DD Bagel Plain (1x60 pcs/Ctn)','10123001'],
+      ['Sandwich','SND-000002','DD Bagel Multigrain (1x60 pcs/Ctn)','10123002'],
+      ['Sandwich','SND-000003','DD Bagel Cinnamon (1x60 pcs/Ctn)','10123003'],
+      ['Sandwich','SND-000005','DD Toast Texas (1x100 pcs/Ctn)','10122001'],
+      ['Sandwich','SND-000010','Liquid Whole Egg Chilled Past.1kg','10092002'],
+      ['Spare','SP1','','','',1],['Spare','SP2','','','',1],['Spare','SP3','','','',1],['Spare','SP4','','','',1],['Spare','SP5','','','',1]
+    ];
+
+    const SS_BYCODE = {}, SS_CODEOF = {};
+    SS_ROWS.forEach(r => { if (!r[5]) { SS_BYCODE[r[3] || r[1]] = r[1]; SS_CODEOF[r[1]] = r[3] || r[1]; } });
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+    const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+
+    let db = { sheets: {}, lastShift: 'Morning' };
+    try { const s = JSON.parse(localStorage.getItem(SS_KEY)); if (s && s.sheets) db = s; } catch(e) {}
+    Object.values(db.sheets).forEach(x => { if (x.saved === undefined) { x.saved = false; x.openConfirmed = !!x.close; x.closeConfirmed = false; } });
+    let cur = null;
+    const ssSave = () => { try { localStorage.setItem(SS_KEY, JSON.stringify(db)); } catch(e) {} };
+    const st = () => db.sheets[cur];
+
+    function ssSwitch(date, shift) {
+      const k = date + '_' + shift;
+      if (!db.sheets[k]) {
+        const prev = cur ? db.sheets[cur] : null;
+        db.sheets[k] = { hdr: { date, shift, shiftNo: '', stockNo: '', empId: prev ? prev.hdr.empId : '', empName: prev ? prev.hdr.empName : '' }, rows: {}, open: false, close: false, openConfirmed: false, closeConfirmed: false, saved: false };
+      }
+      cur = k; db.lastShift = shift; ssSave();
+    }
+    function ssLinkedCol(s) { if (s.saved) return null; if (s.open && !s.openConfirmed) return 'o'; if (s.openConfirmed && s.close && !s.closeConfirmed) return 'c'; return null; }
+    function ssLocked(s, f) { if (s.saved) return true; if (f === 'o') return !!s.openConfirmed; if (f === 'c') return !s.openConfirmed || !!s.closeConfirmed; return false; }
+    // منتج -> ورقة (حي): العمود المربوط في الورقة النشطة يتبع رصيد المنتج
+    function syncSheetFromProduct(prod) {
+      const s = db.active ? db.sheets[db.active] : null; if (!s) return;
+      const col = ssLinkedCol(s); if (!col) return;
+      const key = SS_BYCODE[prod.code]; if (!key) return;
+      const n = countOf(prod);
+      (s.rows[key] = s.rows[key] || {})[col] = (n === null ? '' : String(n));
+      ssSave();
+      if ($('ssModal').style.display === 'flex' && cur === db.active) ssRenderRows();
+    }
+    // ورقة -> منتج (حي): تعديل العمود المربوط يغيّر رصيد المنتج (بالحبات يعاد توزيعه على الباكيتات)
+    function applyCountToProduct(prod, raw) {
+      const v = String(raw).trim(); const n = v === '' ? null : Math.max(0, parseInt(v, 10) || 0);
+      if (prod.mode === 'detailed') {
+        if (n === null) { prod.packs = ''; prod.loose = ''; }
+        else { const sz = parseInt(prod.pack_size, 10) || 0; if (sz > 0) { prod.packs = Math.floor(n / sz); prod.loose = n % sz; } else { prod.packs = ''; prod.loose = n; } }
+      } else prod.qty = (n === null ? '' : n);
+      saveData();
+      ['qty', 'packs', 'loose'].forEach(f => { const el = document.getElementById(f + '_' + prod.id); if (el) el.value = (prod[f] === undefined ? '' : prod[f]); });
+      updateCardTotal(prod);
+    }
+    function hasData(s) { return s.open || s.close || Object.values(s.rows).some(r => Object.values(r).some(v => v)); }
+
+    function countOf(p) {
+      if (p.mode === 'detailed') {
+        if (p.packs === '' && p.loose === '' && p.pack_size === '') return null;
+        const k = parseInt(p.packs,10)||0, s = parseInt(p.pack_size,10)||0, l = parseInt(p.loose,10)||0;
+        return (k > 0 && s > 0) ? k*s + l : l;
+      }
+      return (p.qty === '' || p.qty === undefined) ? null : (parseInt(p.qty,10)||0);
+    }
+
+    function ssRenderHead() {
+      const h = st().hdr;
+      const lock = st().saved ? ' disabled' : '';
+      const f = (k,l,t) => `<div><label>${l}</label><input data-h="${k}" type="${t||'text'}" value="${esc(h[k])}"${k==='date'?'':lock}></div>`;
+      $('ssHead').innerHTML = f('date','Date / التاريخ','date') +
+        `<div><label>Shift / الوردية</label><select data-h="shift"><option value="Morning"${h.shift==='Morning'?' selected':''}>Morning</option><option value="Evening"${h.shift==='Evening'?' selected':''}>Evening</option></select></div>` +
+        f('shiftNo','Shift Number') + f('stockNo','Stock Count Number') + f('empId','Employee ID') + f('empName','Employee Name');
+    }
+    function ssRenderRows() {
+      let h = '', cat = '';
+      SS_ROWS.forEach(r => {
+        if (r[0] !== cat) { cat = r[0]; h += `<tr class="cat"><td colspan="7">${cat}</td></tr>`; }
+        const k = r[1], v = st().rows[k] || {}, spare = !!r[5], manual = !spare && !localProducts.some(x => x.code === (r[3] || r[1]));
+        const S = st(), ro = S.saved ? ' readonly' : '';
+        const cell = f => `<td class="c"><input data-k="${k}" data-f="${f}" inputmode="decimal" value="${esc(v[f])}"${ssLocked(S, f) ? ' readonly' : ''}></td>`;
+        h += `<tr class="${manual?'man':''}">` +
+          (spare ? `<td><input class="t" data-k="${k}" data-f="code" value="${esc(v.code)}"${ro}></td><td class="nm"><input class="t" data-k="${k}" data-f="name" value="${esc(v.name)}"${ro}></td>`
+                 : `<td style="white-space:nowrap">${r[3] || r[1]}</td><td class="nm">${esc(r[2])}</td>`) +
+          `<td class="c">${r[4] || 'PCS'}</td>${cell('o')}${cell('i')}${cell('t')}${cell('c')}</tr>`;
+      });
+      $('ssBody').innerHTML = h;
+    }
+    function ssStatus() {
+      const s = st(); const lk = (cur === db.active) ? ssLinkedCol(s) : null;
+      const o = s.openConfirmed ? L('🔒 مؤكد','🔒 confirmed') : (s.open ? L('📝 مسحوب','📝 pulled') : '⏳');
+      const c = s.closeConfirmed ? L('🔒 مؤكد','🔒 confirmed') : (s.close ? L('📝 مسحوب','📝 pulled') : '⏳');
+      $('ssStatus').textContent = L(`الاستلام: ${o}  |  التسليم: ${c}`, `Receive: ${o}  |  Handover: ${c}`) +
+        (s.saved ? L('  |  💾 محفوظة','  |  💾 Saved') : '') +
+        (lk ? L(`  🔗 مربوط: ${lk==='o'?'الاستلام':'التسليم'}`, `  🔗 Linked: ${lk==='o'?'Receive':'Handover'}`) : '');
+      const pull = $('ssPullBtn'), cf = $('ssConfirmBtn');
+      if (s.saved) { pull.style.display = 'none'; cf.style.display = 'none'; }
+      else if (!s.openConfirmed) { pull.style.display = ''; pull.textContent = s.open ? '🔄 إعادة سحب الاستلام' : '📥 سحب الاستلام من الجرد'; cf.style.display = s.open ? '' : 'none'; cf.textContent = '✔ تأكيد الاستلام'; }
+      else if (!s.closeConfirmed) { pull.style.display = ''; pull.textContent = s.close ? '🔄 إعادة سحب التسليم' : '📤 سحب التسليم من الجرد'; cf.style.display = s.close ? '' : 'none'; cf.textContent = '✔ تأكيد التسليم'; }
+      else { pull.style.display = 'none'; cf.style.display = ''; cf.textContent = '💾 حفظ نهائي'; }
+    }
+    function ssRefresh() { ssRenderHead(); ssRenderRows(); ssStatus(); ssRenderArch(); }
+
+    function ssPull() {
+      const s = st(); if (s.saved || s.closeConfirmed) return;
+      const col = !s.openConfirmed ? 'o' : 'c'; let ok = 0, empty = 0, manual = 0;
+      SS_ROWS.forEach(r => {
+        if (r[5]) return;
+        const p = localProducts.find(x => x.code === (r[3] || r[1])); const n = p ? countOf(p) : null;
+        if (!p) { manual++; return; }
+        if (n === null) { empty++; return; }
+        (s.rows[r[1]] = s.rows[r[1]] || {})[col] = String(n); ok++;
+      });
+      if (col === 'o') s.open = true; else s.close = true;
+      db.active = cur;
+      ssSave(); ssRenderRows(); ssStatus(); ssRenderArch();
+      alert(L(`تم سحب ${ok} صنف في عمود ${col==='o'?'الاستلام (Opening)':'التسليم (Closing)'}.\nلم تُجرد بعد: ${empty}\nإدخال يدوي: ${manual}\nالعمود الآن مربوط مباشرة بصفحة المنتج.`,
+        `Pulled ${ok} items into the ${col==='o'?'Receive (Opening)':'Handover (Closing)'} column.\nNot counted yet: ${empty}\nManual: ${manual}\nThis column is now linked live to the product page.`));
+    }
+    function ssConfirm() {
+      const s = st(); if (s.saved) return;
+      if (!s.openConfirmed) {
+        if (!s.open) return;
+        if (!confirm(L('تأكيد الاستلام؟ بعد التأكيد لن يمكن تعديل عمود الاستلام.', 'Confirm Receive? The Receive column cannot be edited after confirming.'))) return;
+        s.openConfirmed = true;
+      } else if (!s.closeConfirmed) {
+        if (!s.close) return;
+        let same = 0, total = 0;
+        SS_ROWS.forEach(r => { if (r[5]) return; const v = s.rows[r[1]] || {}; if (v.o !== undefined && v.o !== '') { total++; if (v.c === v.o) same++; } });
+        const warn = (total > 0 && same === total) ? L('\n⚠️ كل أعداد التسليم مطابقة تماماً لأعداد الاستلام. هل أعدت الجرد فعلاً؟', '\n⚠️ All Handover numbers are identical to Receive. Did you recount?') : '';
+        if (!confirm(L('تأكيد التسليم؟ بعد التأكيد لن يمكن تعديل عمود التسليم.', 'Confirm Handover? The Handover column cannot be edited after confirming.') + warn)) return;
+        s.closeConfirmed = true;
+      } else {
+        if (!confirm(L('حفظ نهائي؟ بعد الحفظ لن يمكن تعديل الورقة وستنتقل إلى الأيام المحفوظة.', 'Final save? The sheet cannot be edited afterwards and will move to Saved days.'))) return;
+        s.saved = true; db.active = null;
+      }
+      ssSave(); ssRenderHead(); ssRenderRows(); ssStatus(); ssRenderArch();
+      if (s.saved) { $('ssArch').style.display = 'block'; alert(L('تم حفظ الورقة ✅ وهي الآن في الأيام المحفوظة.', 'Sheet saved ✅ It is now in Saved days.')); }
+    }
+    function ssOpen() {
+      ssSwitch(todayStr(), db.lastShift || 'Morning'); ssRefresh();
+      $('ssModal').style.display = 'flex'; document.body.style.overflow = 'hidden';
+    }
+    function ssClose() { $('ssModal').style.display = 'none'; document.body.style.overflow = 'auto'; document.querySelectorAll('.pr-target').forEach(e => e.classList.remove('pr-target')); }
+    function ssReset() {
+      if (st().saved) { alert(L('الورقة محفوظة نهائياً ولا يمكن مسحها من هنا. احذفها من الأيام المحفوظة إن لزم.', 'This sheet is saved and cannot be cleared here. Delete it from Saved days if needed.')); return; }
+      if (!confirm('مسح أعداد هذه الورقة فقط (هذا اليوم والوردية)؟ الأيام الأخرى والجرد لن يتأثروا.')) return;
+      const h = st().hdr; db.sheets[cur] = { hdr: h, rows: {}, open: false, close: false, openConfirmed: false, closeConfirmed: false, saved: false }; ssSave(); ssRefresh();
+    }
+    function ssToggleArch() { const a = $('ssArch'); a.style.display = a.style.display === 'block' ? 'none' : 'block'; ssRenderArch(); }
+    function ssRenderArch() {
+      const keys = Object.keys(db.sheets).filter(k => hasData(db.sheets[k])).sort().reverse();
+      $('ssArch').innerHTML = `<div style="font-weight:900;margin-bottom:6px">${L('الأيام المحفوظة','Saved days')} (${keys.length})</div>` +
+        (keys.length ? keys.map(k => { const s = db.sheets[k];
+          return `<div class="it"><span>${esc(s.hdr.date)} • ${esc(s.hdr.shift)} &nbsp; ${s.saved ? L('💾 محفوظة','💾 Saved') : L('⏳ قيد العمل','⏳ In progress')} &nbsp; ${L('استلام','Receive')}${s.openConfirmed?'🔒':(s.open?'📝':'⏳')} ${L('تسليم','Handover')}${s.closeConfirmed?'🔒':(s.close?'📝':'⏳')}</span><button class="ss-btn ss-main" onclick="ssLoad('${k}')">فتح</button><button class="ss-btn ss-red" onclick="ssDel('${k}')">حذف</button></div>`; }).join('')
+          : '<div style="color:#64748b;font-size:12px">لا توجد أيام محفوظة بعد.</div>');
+    }
+    function ssLoad(k) { const s = db.sheets[k]; if (!s) return; cur = k; db.lastShift = s.hdr.shift; ssSave(); ssRefresh(); $('ssArch').style.display = 'none'; }
+    function ssDel(k) {
+      if (!confirm('حذف هذا اليوم نهائياً؟')) return;
+      delete db.sheets[k]; if (cur === k) ssSwitch(todayStr(), db.lastShift || 'Morning'); ssSave(); ssRefresh();
+    }
+    function ssWhats() {
+      const h = st().hdr; let t = `📋 Daily Shift Turnover - Warehouse Items\n${h.date||''} | ${h.shift||''} | Shift#${h.shiftNo||'-'} | Count#${h.stockNo||'-'}\n${h.empName||''}\n\n` + L('الصنف | استلام | +وارد | -صادر | تسليم', 'Item | Receive | +In | -Out | Handover') + '\n';
+      SS_ROWS.forEach(r => {
+        const v = st().rows[r[1]] || {}, nm = r[5] ? v.name : r[2];
+        if (!nm || !(v.o || v.i || v.t || v.c)) return;
+        t += `${nm}: ${v.o||0} | ${v.i||0} | ${v.t||0} | ${v.c||0}\n`;
+      });
+      window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank');
+    }
+    function ssBackup() {
+      const data = { v: 2, saved: new Date().toISOString(), inventory: localProducts, orders: orderQuantities, sheets: db, monthly: mnDB, monthlyHdr: mnHdr };
+      const json = JSON.stringify(data);
+      try {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+        a.download = 'dunkin-backup-' + todayStr() + '.json';
+        document.body.appendChild(a); a.click(); a.remove();
+      } catch(e) {}
+      try { navigator.clipboard.writeText(json).catch(() => {}); alert('تم إنشاء النسخة الاحتياطية، ونُسخت أيضاً إلى الحافظة. الصقها في ملف نصي للاحتفاظ بها.'); } catch(e) { alert('تم إنشاء النسخة الاحتياطية.'); }
+    }
+    function ssRestore(inp) {
+      const f = inp.files && inp.files[0]; if (!f) return;
+      const rd = new FileReader();
+      rd.onload = () => {
+        try {
+          const d = JSON.parse(rd.result);
+          if (!d.inventory || !d.sheets) throw new Error('bad');
+          if (!confirm('سيتم استبدال كل البيانات الحالية بالنسخة المحفوظة. متابعة؟')) return;
+          localStorage.setItem('inventory_all_255_v1', JSON.stringify(d.inventory));
+          localStorage.setItem('order_qtys_v1', JSON.stringify(d.orders || {}));
+          localStorage.setItem(SS_KEY, JSON.stringify(d.sheets));
+          if (d.monthly && d.monthly.list) localStorage.setItem('monthly_counts_v1', JSON.stringify(d.monthly));
+          if (d.monthlyHdr) localStorage.setItem('monthly_hdr_v1', JSON.stringify(d.monthlyHdr));
+          location.reload();
+        } catch(e) { alert('الملف غير صالح.'); }
+      };
+      rd.readAsText(f); inp.value = '';
+    }
+
+    document.addEventListener('input', e => {
+      const t = e.target; if (!t.dataset || !cur) return;
+      if (t.dataset.k) {
+        if (ssLocked(st(), t.dataset.f)) return;
+        const o = st().rows[t.dataset.k] = st().rows[t.dataset.k] || {}; o[t.dataset.f] = t.value; ssSave();
+        if ((t.dataset.f === 'o' || t.dataset.f === 'c') && cur === db.active && t.dataset.f === ssLinkedCol(st()) && SS_CODEOF[t.dataset.k]) {
+          const prod = localProducts.find(x => x.code === SS_CODEOF[t.dataset.k]); if (prod) applyCountToProduct(prod, t.value);
+        }
+      }
+      else if (t.dataset.h && t.dataset.h !== 'date' && t.dataset.h !== 'shift') { if (st().saved) return; st().hdr[t.dataset.h] = t.value; ssSave(); }
+    });
+    document.addEventListener('change', e => {
+      const t = e.target; if (!t.dataset || t.dataset.h === undefined) return;
+      if (t.dataset.h === 'date' || t.dataset.h === 'shift') {
+        const h = st().hdr; const date = t.dataset.h === 'date' ? (t.value || h.date) : h.date; const shift = t.dataset.h === 'shift' ? t.value : h.shift;
+        ssSwitch(date, shift); ssRefresh();
+      }
+    });
+
+    /* =====================================================================
+       الجرد الشهري — Stock Take List (بنفس ترتيب ملف Oracle، الأعداد حيّة من المنتجات)
+       ===================================================================== */
+    const MN_KEY = 'monthly_counts_v1', MN_HDR_KEY = 'monthly_hdr_v1';
+    const MON_AR = {"Bagel": "بيغل", "Brooms": "مكانس", "Cakes and Cookies": "كيك وكوكيز", "Capsules": "كبسولات", "Cheese": "أجبان", "Coffee Machine Cleaner": "منظف ماكينة القهوة", "Cream": "كريمة", "Cup Holder and Sleeve": "حوامل وأغلفة الأكواب", "Cutleries": "أدوات المائدة", "Dark Roast": "دارك روست", "Decaf": "خالي الكافيين", "Espresso blend": "خلطة إسبريسو", "Fancy Donuts": "دونات فانسي", "Filters": "فلاتر", "Flavoured Syrup": "شرابات منكهة", "French Bakeries": "مخبوزات فرنسية", "Fruit Syrup": "شراب الفواكه", "Healthy": "صحي", "Hygiene": "نظافة", "Juices": "عصائر", "Lids": "أغطية", "Liners": "ورق وبطانات", "Milk": "حليب", "Milk Alternative": "بدائل الحليب", "Milk Based": "حليب بنكهات", "Miscellaneous": "متفرقات", "Mops": "ممسحات", "Munchkins": "مونشكين", "Munchkins semi-Yeast": "مونشكين شبه مخمر", "Original Blend": "الخلطة الأصلية", "Paper Bags": "أكياس ورقية", "Paper Boxes": "علب ورقية", "Paper Cups": "أكواب ورقية", "Plastic Bags": "أكياس بلاستيك", "Plastic Cups": "أكواب بلاستيك", "Poultry": "دواجن", "Regular Donuts": "دونات عادي", "Sanitizers": "معقمات", "Sauces": "صلصات", "Seasoning": "توابل", "Soaps": "صابون", "Sticks": "عصي", "Straw": "شفاطات", "Sugar": "سكر", "Sugar Syrup": "شراب السكر", "Sweet": "حلويات", "Tea": "شاي", "Test strips": "شرائط الاختبار", "Toast": "توست", "Tumblers and Mugs": "تملبرات وأكواب", "Water": "مياه", "Wooden Stirrer": "أعواد تحريك خشبية", "Wraps": "أغلفة"};
+    const MON_RAW = `#Bagel
+10123003|SANDWICH.DD BAGEL CINNAMON (1X60 PCS)|CTN 60 PCS;PCS
+10123002|SANDWICH.DD BAGEL MULTIGRAIN (1X60 PCS)|CTN 60 PCS;PCS
+10123001|SANDWICH.DD BAGEL PLAIN (1X60 PCS)|CTN 60 PCS;PCS
+#Brooms
+14011001|DISPOSABLES.SOFT PLASTIC BROOM|PCS
+#Cakes and Cookies
+12023003|APPLE MUFFIN|PCS
+12023001|BLUEBERRY MUFFIN FG|PCS
+12023004|CHOCOLATE CAKE|PCS
+12023024|CHOCOLATE CHIP COOKIES|PCS
+12023002|CHOCOLATE MUFFIN FG|PCS
+12023018|DATE MUFFIN|CTN 36 PCS;PCS
+12023023|DATES CAKE|PCS
+12023022|DATES MUFFIN|PCS
+12023006|DOUBLE CHOCO COOKIES|PCS
+12023005|MARBLE CAKE|PCS
+12023021|VANILLA CAKE|PCS
+12023019|VANILLA CHOCO MUFFIN|PCS
+#Capsules
+10015003|COFFEE.BOLD ROAST ESPRESSO (10CAPS)|CTN 10 PKT 1 PC;PKT 1 PCS;PCS
+10015001|COFFEE.SIGNATURE BLEND ESPRESSO (10CAPS)|CTN 10 PKT 1 PC;PCS
+#Cheese
+10022001|CHEESE.SLICE CHEESE FOR SANDWICH (10 SLICES)|CTN 24 PKT 10 PCS;PKT 10 PCS;PCS
+10022023|CREAM CHEESE (2KG)|CTN 8 KG;KG
+10022003|SPREADS.LABNEH FULL FAT (180 GMS 60 PCS)|PKT 0.18 KG;KG
+10022002|SPREADS.PHILADELPHIA CREAM CHEESE 180 GM|PKT 0.18 KG;KG
+#Coffee Machine Cleaner
+14026008|CHEMICALS.CLEANER TABLET CLEANER(BOX X 150 PCS)|PKT 150 PCS;PCS
+#Cream
+10033008|TOPPING.WHIPPING CREAM SPRAY 250 ML|PCS 0.250 LTR;LTR
+#Cup Holder and Sleeve
+13015001|BOXES.TWO CUP CARRIER BOX|CTN 500 PCS;PCS
+13015004|CUPS.CARRIER 4 CUPS (1X 200 PCS)|PKT 200 PCS;PCS
+13015006|DISPOSABLES SLEEVE FOR 14 16 20OZ CUPS|CTN 1000 PCS;PCS
+13015005|DISPOSABLES SLEEVE FOR 9 10 OZ CUPS|CTN 1000 PCS;PCS
+#Cutleries
+13024010|PLASTIC FRUIT FORK 20 PACK X 100 PCS|PKT 100 PCS;PCS
+#Dark Roast
+10012001|COFFEE.DD DARK ROAST GROUNDS BAG 01 LBS|CTN 24 PKT 0.453 KG;PKT 0.453 KG;KG
+#Decaf
+10014001|COFFEE.DD DECAF COFFEE GROUNDS BAG 01 LBS|PKT 0.453 KG;KG
+#Espresso blend
+10013001|COFFEE.ESPRESSO BEANS BAG 01 KG|CTN 6 PKT 1 KG;PKT 1 KG;KG
+#Fancy Donuts
+12012010|BERRY TROPIX|PCS
+12012022|CHOCO HEART|PCS
+12012024|CHOCO KUNAFA CROWN|PCS
+12012007|COFFEE ROLL|PCS
+12012011|COOKIE BOX|PCS
+12012023|DARKWAVE PISTACHIO|PCS
+12012018|HAZELNUT DATES HARMONY DONUT|PCS
+12012012|MANGO MIRAGE|PCS
+12012013|OREO HAZENOVA|PCS
+12012021|PISTACHIO CREAMY CRUNCH|PCS
+12012025|RUBY CRUNCH|PCS
+#Filters
+13019001|DISPOSABLES.COLD BREW FILTER|PKT 50 PCS;PCS
+#Flavoured Syrup
+10083012|BLUE BAY SYRUP (6 X1 LTR)|PCS 1 LTR;LTR
+10083052|CARAMEL SAUCE PEN 300 ML|PCS
+10083025|MATCHA POWDER -1KG|PKT 1 KG;KG
+10083044|MATCHA POWDER JUST CHILL (1KGX12 PCS)|PKT 1 KG;KG
+10083014|POWDER.CHOCOLATE HOT POWDER BAG 03 LBS|PKT 1.36 KG;KG
+10083013|POWDER.FRAPPE-CHEESECAKE 1 KG|PKT 1 KG;KG
+10083009|SYRUP.CARAMEL SAUCE PEN 165 ML|PCS 0.165 LTR;LTR
+10083003|SYRUP.CARAMEL SYRUP 750 ML|PCS 0.750 LTR;LTR
+10083043|SYRUP.DAVINCI STRAWBERRY SYRUP (12 X 750ML)|PCS 0.750 LTR;LTR
+10083007|SYRUP.HAZELNUT SYRUP 750 ML|PCS 0.750 LTR;LTR
+10083008|SYRUP.MOCHA SAUCE PEN 165 ML|PCS 0.165 LTR;LTR
+10083017|SYRUP.MONIN BLUEBERRY SYRUP (6X1LTR)|PCS 1 LTR;LTR
+10083004|SYRUP.MONIN PEACH ICETEA SYRUP 01 LTR|PCS 1 LTR;LTR
+10083005|SYRUP.MONIN RANCHO LEMONADE SYRUP 01 LTR|PCS 1 LTR;LTR
+10083010|SYRUP.MONIN STRAWBERRY SYRUP 01 LTR|PCS 1 LTR;LTR
+10083006|SYRUP.VANILLA SYRUP 750 ML|PCS 0.750 LTR;LTR
+#French Bakeries
+12021002|CHEESE CROISSANT|PCS
+12021004|CHOCOLATE CROISSANT|PCS
+12021006|MAPLE PECAN CROISSANT|PCS
+12021001|PLAIN CROISSANT|PCS
+12021003|ZAATER CROISSANT|PCS
+#Fruit Syrup
+10082007|DA VINCI MANGO FRUIT MIX (6X1 LTR)|PCS 1 LTR;LTR
+10082004|MANGO DRAGON FRUIT PUREE (6 X1 LTR)|CTN 6 PCS 1 LTR;PCS 1 LTR;LTR
+#Healthy
+12033002|MERCHANDISE.CARAMEL NUT 6X12X50G|PKT 12 PCS;PCS
+12033001|MERCHANDISE.DOUBLE DARK CHOC NUT 6X12X50G|PKT 12 PCS;PCS
+#Hygiene
+14027026|DISPOSABLES NAPKINS GF SIZE 30X30 CM 1X4000|CTN 4000 PCS;PCS
+14027003|DISPOSABLES.D. GLOVES 1 PACK|PKT 500 PCS;PCS
+14027006|DISPOSABLES.ECONOMY FACE MASK 1 PACK|CTN 40 PKT 50 PCS;PKT 50 PCS;PCS
+14027008|DISPOSABLES.JUMBO ROLL-BLUE|CTN 2 PCS;PCS
+14027007|DISPOSABLES.MAXI ROLL|CTN 6 PCS;PCS
+14027005|DISPOSABLES.MOB CAP 1 PACK|PKT 100 PCS;PCS
+14027002|DISPOSABLES.NAPKINS DD (1X3600)|CTN 12 PKT 300 PCS;PKT 300 PCS;PCS
+14027009|DISPOSABLES.TRASH BAG BLACK|CTN 300 PCS;PCS
+14027010|DISPOSABLES.TRASH BAG-10 G 1X30|PKT 30 PCS;PCS
+14027011|DISPOSABLES.WIPING PAPER AUTO CUTTED ROLL|PCS
+#Juices
+12043002|CHERRY JUICE 300ML|CTN 24 PCS;PCS
+12043004|MANGO JUICE 300ML|CTN 24 PCS;PCS
+12043003|ORANGE JUICE 300 ML|CTN 24 PCS;PCS
+#Lids
+13022007|LIDS DW COFFEE AND TEA CUPS 10OZ|PKT 100 PCS;PCS
+13022008|LIDS DW COFFEE AND TEA CUPS 14OZ 16OZ 20OZ|PKT 100 PCS;PCS
+13022010|LIDS DW COFFEE AND TEA CUPS 9OZ|PKT 100 PCS;PCS
+13022004|LIDS PLASTIC DOME LIDS 12 16 24OZ|PKT 50 PCS;PCS
+13022005|LIDS PLASTIC FLAT LIDS 12 16 24OZ|CTN 10 PKT 100 PCS;PKT 100 PCS;PCS
+13022011|LIDS.PLASTIC DOME LIDS 32OZ|PKT 50 PCS;PCS
+13022009|LIDS.PLASTIC FLAT LIDS 32OZ|PKT 100 PCS;PCS
+13022006|LIDS.PLASTIC STOPPER|PKT 500 PCS;PCS
+13022028|SAUCE LID 2 OZ 20 PACK X 100 PCS|PCS
+#Liners
+13017006|DISPOSABLES.COFFEE FILTERS 1 PACK (500 PCS)|CTN 2 PKT 500 PCS;PCS
+13017008|DISPOSABLES.UNWAX TISSUES (1X2000 PCS)|PKT 2000 PCS;PCS
+13017002|GREASE PROOF BLACK LINER (BDL 1X1000 PCS)|CTN 2 PKT 1000 PCS;PKT 1000 PCS;PCS
+13017003|PAPER PARCHMENT LINER 12 X 1075 1X400 PCS|PKT 400 PCS;PCS
+#Milk
+10021001|MILK.FULL FAT MILK 01 LTR|CTN 12 PCS 1 LTR;PCS 1 LTR;LTR
+10021002|MILK.LOW FAT MILK 01 LTR|CTN 12 PCS 1 LTR;PCS 1 LTR;LTR
+#Milk Alternative
+10024001|MILK ALMOND DRINK ORIGINAL 8X1LTR|CTN 8 PCS 1 LTR;PCS 1 LTR;LTR
+10024002|MILK COCONUT DRINK ORIGINAL 12X1LTR|CTN 12 PCS 1 LTR;PCS 1 LTR;LTR
+10024003|MILK OAT DRINK ORIGINAL 6X1LTR|PCS 1 LTR;LTR
+#Milk Based
+12044002|BR BERRY STRAWBERRY MILK (12 X 180 ML)|PCS
+#Miscellaneous
+10151001|SPARKLING SODA 24X300ML|PCS 0.300 LTR;LTR
+10151003|SPARKLING SODA 30X250ML|CTN 30 PCS 0.250 LTR;PCS 0.250 LTR;LTR
+#Mops
+14013001|DISPOSABLES.MOPHEAD (1 CTNX36PCS)|CTN 36 PCS;PCS
+#Munchkins
+12013001|BAVARIAN MUNCHKIN|PCS
+12013005|CAKE BUTTERNUT MUNCHKINS|PCS
+12013007|CHOCO GLAZED MUNCHKIN|PCS
+12013011|GLAZED CAKE MUNCHKINS|PCS
+12013002|GLAZED YEAST MUNCHKIN|PCS
+#Munchkins semi-Yeast
+11014001|YDM MUNCHKIN|PCS
+#Original Blend
+10011004|COFFEE.DD COFFEE BEANS BAG 2.5 LBS|CTN 10 PKT 1.135 KG;PKT 1.135 KG;KG
+10011001|COFFEE.DD COFFEE BEANS BAG 5 LBS|CTN 6 PKT 2.27 KG;PKT 2.27 KG;KG
+10011002|COFFEE.DD COFFEE GROUNDS BAG 01 LBS|CTN 24 PCS;PCS
+10011003|COFFEE.DD DARK ROAST WHOLE BEAN BAG 02 LBS|CTN 8 PKT 0.909 KG;PKT 0.909 KG;KG
+#Paper Bags
+13014001|BAGS.BAG BROWN 5 LBS (1X1000 PCS)|CTN 1000 PCS;PCS
+#Paper Boxes
+13012060|BOX INSIDE HOLDER FOR SAUCE BOWL|PCS
+13012010|BOXES.BOX O JOE (DUNKIN BOX 112 OZ)|CTN 25 PCS;PCS
+13012019|BOXES.BOX O JOE(DUNKIN BOX 20OZ)|CTN 100 PCS;PCS
+13012018|BOXES.BOX O JOE(DUNKIN BOX 40OZ)|CTN 100 PCS;PCS
+13012020|BOXES.BOX O JOE(ORANGE BOX 40OZ)|PCS
+13012007|BOXES.BOX OF 3 FOR KSA|CTN 200 PCS;PCS
+13012001|BOXES.DONUT BOX 6 PCS|CTN 200 PCS;PCS
+13012002|BOXES.DONUT BOX PRINTED 12 PCS|CTN 100 PCS;PCS
+13012003|BOXES.MUNCHKIN BOX OF 25|PCS
+13012062|DREAM DONUT BOX SQUISHIES 10 PCS (CTN x 200 Pcs)|PCS
+13012067|DREAM DONUT BOX SQUISHIES 10 PCS (CTN x 200 PCS) New|PCS
+13012063|DREAM DONUT BOX SQUISHIES 20 PCS (CTN x 100 Pcs)|PCS
+13012068|DREAM DONUT BOX SQUISHIES 20 PCS (CTN x 100 Pcs) New|PCS
+13012064|DREAM DONUT DIVIDER SQUISHIES 10 PCS(CTN x 200 PCS)|PCS
+13012069|DREAM DONUT DIVIDER SQUISHIES 10 PCS(CTN x 200 PCS) New|PCS
+13012065|DREAM DONUT DIVIDER SQUISHIES 20 PCS(CTN x 100 Pcs)|PCS
+13012070|DREAM DONUT DIVIDER SQUISHIES 20 PCS(CTN x 100 Pcs) New|PCS
+13012028|DUNKIN BRIOCHE TOAST BOX (C1X300PCS)|CTN 300 PCS;PCS
+#Paper Cups
+13011011|CUPS DW COFFEE AND TEA CUPS 10OZ|CTN 20 PKT 25 PCS;PKT 25 PCS;PCS
+13011012|CUPS DW COFFEE AND TEA CUPS 14OZ|CTN 20 PKT 25 PCS;PKT 25 PCS;PCS
+13011014|CUPS DW COFFEE AND TEA CUPS 16OZ|PKT 25 PCS;PCS
+13011015|CUPS DW COFFEE AND TEA CUPS 20OZ|PKT 15 PCS;PCS
+13011013|CUPS DW COFFEE AND TEA CUPS 9OZ|PKT 25 PCS;PCS
+13011022|CUPS.CAPPUCCINO CUPS 20OZ|PKT 25 PCS;PCS
+13011006|CUPS.COFFEE CUPS 16OZ|PKT 50 PCS;PCS
+13011007|CUPS.COFFEE CUPS 20OZ|PKT 25 PCS;PCS
+13011008|CUPS.COFFEE CUPS 9OZ|PKT 50 PCS;PCS
+13011016|CUPS.D/W CAPPUCCINO CUP 10OZ|PKT 25 PCS;PCS
+13011019|CUPS.D/W CAPPUCCINO CUP 12OZ|PKT 25 PCS;PCS
+13011017|CUPS.D/W CAPPUCCINO CUP 16 OZ|PKT 25 PCS;PCS
+13011018|CUPS.D/W CAPPUCCINO CUP 20 OZ|PKT 15 PCS;PCS
+13011010|CUPS.ESPRESSO CUPS 4OZ|PKT 50 PCS;PCS
+#Plastic Bags
+13023002|BAGS.DD SHOPPING BAGS LARGE|CTN 500 PCS;PCS
+13023003|BAGS.DD SHOPPING BAGS SMALL|CTN 1000 PCS;PCS
+13023009|BAGS.ICED COFFEE LINER|CTN 100 PCS;PCS
+#Plastic Cups
+13021005|CUPS.COLD CUP CLEAR PLASTIC - 12 OZ|PKT 50 PCS;PCS
+13021001|CUPS.COLD CUPS 4OZ|PKT 100 PCS;PCS
+13021002|CUPS.COLD CUPS PLASTIC 16OZ|PKT 50 PCS;PCS
+13021003|CUPS.COLD CUPS PLASTIC 24OZ|PKT 50 PCS;PCS
+13021006|CUPS.COLD CUPS PLASTIC 32OZ|PKT 25 PCS;PCS
+13021004|CUPS.PORTION PLASTIC CUPS SLEEVE (1X50 PCS)|PKT 50 PCS;PCS
+13021021|SAUCE CUP 2 OZ 20 PACK X 100 PCS|PCS
+#Poultry
+10092001|MORTADELLA.CHICKEN MORTADELLA|PKT 5 PCS;PCS
+10092018|SANDWICH FROZEN EGG 1KG|KG
+10092002|SANDWICH.LIQUID WHOLE EGG CHILLED PAST 1KG|PCS 1 KG;KG
+#Regular Donuts
+12011052|ALMOND HAZELNUT|PCS
+12011037|BAVARIAN FILLED|PCS
+12011034|BOSTON CREAM DONUT|PCS
+12011100|CHOCO COCO DONUT|PCS
+12011108|CHOCO FROSTED CRUNCH|PCS
+12011001|CHOCO FROSTED DONUT|PCS
+12011085|COLD BREW CRUNCH DONUT|PCS
+12011088|COOKIE DONUT|PCS
+12011082|COTTON CANDY PUFF|PCS
+12011002|GLAZED DONUT|PCS
+12012019|HAZELNUT DATES HARMONY|PCS
+12011098|KUNAFA CHOCO CRUNCH|PCS
+12011064|LONG JOHN|PCS
+12011094|MINI CHOCO FROST|PCS
+12011096|MINI DATES CREAM|PCS
+12011049|NATIONAL DAY DONUT|PCS
+12011067|OLD FASHIONED DONUT|PCS
+12011099|PINK BERRY|PCS
+12011092|PURPLE VELVET CREAM|PCS
+12011093|PURPLE VELVET SPRINKLE|PCS
+12011107|SAUDI NATIONAL DAY DONUT|PCS
+12011106|SQUISHIES BISCOFF CREAM|PCS
+12011104|SQUISHIES CHEESECAKE|PCS
+12011105|SQUISHIES CHOCO HAZELNUT|PCS
+12011103|SQUISHIES PISTACHIO|PCS
+12011101|STRAWBERRY CHEESECAKE CRUNCH|PCS
+12011056|TIRAMISU CHEESECAKE|PCS
+12011087|VANILLA CANDY SPRINKLE DONUT|PCS
+#Sanitizers
+14022002|CHEMICALS.HAND SANITIZING GEL BOTTLE|PCS
+14022003|ECOLAB KAY 5 SANITIZER TABLET 1 BOX (240 TABLETS)|CTN 240 PCS;PCS
+#Sauces
+10061045|CHOCO CHIP COOKIES|PCS
+10061017|SAFFRON SAUCE (4 X 1.89 LTR)|PCS 1.89 LTR;LTR
+10061002|SAUCE.ARABESCHI CARAMEL FLEUR DE SEL 3 KG FOR FRAPPE|PKT 3 KG;KG
+10061004|SAUCE.ARABESCHI STRAWBERRY EXTRA 1 KG|PKT 1 KG;KG
+10061016|SAUCE.CHIPOTLE MAYONNAISE 225ML|PCS 0.225 LTR;LTR
+10061011|SAUCE.CHOCOLATE FLAVORED SAUCE (2 LTR)|PCS 2 LTR;LTR
+10061010|SAUCE.DA VINCI SALTED CARAMEL SAUCE 2LTR FOR LATTE|CTN 3 PCS 2 LTR;PCS 2 LTR;LTR
+10061019|SAUCE.DAVINCI GOURMET ARABIC COFFEE FLAVORED SAUCE (3PX2L)|PCS 2 LTR;LTR
+10061012|SAUCE.LEMONADE 1 LTR|CTN 6 PCS 1 LTR;PCS 1 LTR;LTR
+10061007|SAUCE.MAYONNAISE CREAMY 400ML|PCS 0.400 LTR;LTR
+10061006|SAUCE.TOMATO KETCHUP 570ML|PCS 0.570 LTR;LTR
+10061013|SAUCE.WATERMELON 750ML|PCS 0.750 LTR;LTR
+10061005|SAUCE.WHITE CHOCOLATE SAUCE 2 LTR|CTN 3 PCS 2 LTR;PCS 2 LTR;LTR
+10061018|SPREADS.PESTO SAUCE 185 GM|PCS 0.185 KG;KG
+10061001|TABASCO SRIRACHA SAUCE (300 GRM)|PKT 0.3 KG;KG
+#Seasoning
+10063002|SPREADS.HONEY 380 GM|PCS 0.380 KG;KG
+#Soaps
+14021004|CHEMICALS.KAY QSR AMH HAND WASH 4 GALLON|PCS
+14021001|ECOLAB CHEMICALS.KAY MULTI PURPOSE 1 BOX (168 SACHETS)|PCS
+#Sticks
+14014001|DISPOSABLES MOPHEAD STICK RED GREEN BLUE|PCS
+#Straw
+13025002|DISPOSABLES.PLASTIC STRAW BIG (1X100 PCS)|PKT 100 PCS;PCS
+13025001|DISPOSABLES.PLASTIC STRAW SMALL (1X250 PCS)|CTN 40 PKT 250 PCS;PKT 250 PCS;PCS
+#Sugar
+10141003|SUGAR.BROWN SUGAR STICK (1X2000)|CTN 2000 PCS;PCS
+10141002|SUGAR.SUGAR STICK 5GM (1X2000)|CTN 2000 PCS;PCS
+10141004|SUGAR.TROPICANA SLIM SUGAR (1X1200)|CTN 12 PKT 100 PCS;PKT 100 PCS;PCS
+10141009|WHITE SUGAR (CTN x 14 PKT X 725 GRM)|CTN 14 PKT 0.725 KG;PKT 0.725 KG;KG
+#Sugar Syrup
+10081001|SYRUP.SUGAR CANE SYRUP 750 ML|PCS 1 LTR;PCS 0.750 LTR;LTR
+#Sweet
+12031004|CHOCOLATE COFFEE SQUARES 35G|CTN 60 PCS;PCS
+#Tea
+10131011|HIBISCUS TEA (CTN x 24 PCS x 250 GRM)|CTN 24 PCS 0.25 KG;PCS 0.25 KG;KG
+10131001|TEA.BOLDBREAKFAST BLACK TEA (1X15 /BOX)|PKT 15 PCS;PCS
+10131002|TEA.KARAK CHAI 500GM|PKT 0.500 KG;KG
+#Test strips
+14028004|ECOLAB CHEMICALS. (PKT 200 PCS)|PKT 200 PCS;PCS
+#Toast
+10122001|SANDWICH.DD TOAST TEXAS (1X100 PCS)|CTN 100 PCS;PCS
+#Tumblers and Mugs
+12051001|BLUETOOTH BOTTLEBLACK 500ML|PCS
+12051003|BLUETOOTH TUMBLERBLACK 800ML|PCS
+12051004|BLUETOOTH TUMBLERWHITE 800ML|PCS
+12051007|GYM SILICON L BLACK 2LTR|PCS
+12051008|GYM SILICON L ORANGE 2LTR|PCS
+12051005|GYM SILICON R BLACK 600ML|PCS
+12051050|MERCHANDISE TRIPLE DRIPPER AND SS HOLDER|PCS
+12051048|MERCHANDISE.BUTTON SLEEVE|PCS
+12051014|MERCHANDISE.VACUUM MUG 480ML|PCS
+12051049|MERCHANDISE.WELCRO SLEEVE|PCS
+12051009|PILMOA PREMIUM BLACK 473ML|PCS
+12051010|PILMOA PREMIUM WHITE 473ML|PCS
+12051040|TUMBLER.CHOCOLAR TUMBLER DD - BLACK|PCS
+12051041|TUMBLER.CHOCOLAR TUMBLER DD - IVORY|PCS
+12051052|TUMBLER.NEW DUNKIN MUG REGULAR|PCS
+#Water
+12041004|EVIAN SPARKLING WATER CAN 24 X 0.33L|CTN 24 PCS;PCS
+12041002|WATER.EVIAN WATER BOTTLE 500 ML|CTN 24 PCS;PCS
+12041003|WATER.NOVA WATER BOTTLE 330 ML|CTN 40 PCS;PCS
+#Wooden Stirrer
+13051001|DISPOSABLES.STIR STICKS (1X1000 PCS)|PKT 1000 PCS;PCS
+#Wraps
+13013001|BAGS.WRAP SANDWICH BAG (1X2000 PCS)|CTN 2000 PCS;PCS`;
+    const MON = [];
+    MON_RAW.split('\n').forEach(l => {
+      if (l[0] === '#') MON.push({ en: l.slice(1), items: [] });
+      else if (l.trim()) { const a = l.split('|'); MON[MON.length - 1].items.push({ code: a[0], name: a[1], lines: a[2].split(';') }); }
+    });
+    let mnDB = { list: [] }; try { const x = JSON.parse(localStorage.getItem(MN_KEY)); if (x && x.list) mnDB = x; } catch(e) {}
+    let mnHdr = { listNo: '', cost: 'DD - Al Nahda Road' }; try { Object.assign(mnHdr, JSON.parse(localStorage.getItem(MN_HDR_KEY)) || {}); } catch(e) {}
+    let mnView = null;
+    const mnSaveDB = () => { try { localStorage.setItem(MN_KEY, JSON.stringify(mnDB)); } catch(e) {} };
+
+    // يوزّع عدّ المنتج على أسطر الوحدات (كرتون / باكيت / حبة ...)
+    function monLines(p, lines) {
+      const out = lines.map(() => ''); const last = lines.length - 1;
+      const ix = tok => lines.findIndex(l => l.split(' ')[0] === tok);
+      if (p.mode === 'detailed') {
+        if (p.packs === '' && p.loose === '' && p.pack_size === '') return out;
+        const iP = ix('PKT'), iU = ix('PCS');
+        if (iP >= 0 && iP !== (iU >= 0 ? iU : last)) { out[iP] = String(parseInt(p.packs, 10) || 0); out[iU >= 0 ? iU : last] = String(parseInt(p.loose, 10) || 0); }
+        else out[last] = String(countOf(p));
+      } else {
+        const n = countOf(p); if (n === null) return out;
+        let i = ix(p.unit_code), tag = '';
+        if (i < 0) { // وحدة المنتج غير مطبوعة في سطور Oracle: نكتب الرقم مع وحدته حتى لا يُقرأ كحبات
+          const pc = ix('PCS'); i = (lines.length === 1) ? 0 : (pc >= 0 ? pc : last);
+          if (p.unit_code === 'CTN' || p.unit_code === 'PKT') tag = ' ' + p.unit_code;
+        }
+        out[i] = String(n) + tag;
+      }
+      return out;
+    }
+    function mnLive() {
+      const rows = {};
+      MON.forEach(sec => sec.items.forEach(it => { const p = localProducts.find(x => x.code === it.code); rows[it.code] = p ? monLines(p, it.lines) : it.lines.map(() => ''); }));
+      return rows;
+    }
+    function mnOpen() { mnView = null; mnHdr.date = todayStr(); mnRender(); $('mnModal').style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+    function mnClose() { $('mnModal').style.display = 'none'; document.body.style.overflow = 'auto'; document.querySelectorAll('.pr-target').forEach(e => e.classList.remove('pr-target')); }
+    function mnRender() {
+      const v = mnView, h = v ? v.hdr : mnHdr, rows = v ? v.rows : mnLive(), ro = v ? ' readonly' : '';
+      const f = (k, l, t) => `<div><label>${l}</label><input data-mh="${k}" type="${t||'text'}" value="${esc(h[k])}"${ro}></div>`;
+      $('mnHead').innerHTML = f('date', 'Date / التاريخ', 'date') + f('listNo', 'Stock Take List / رقم القائمة') + f('cost', 'Cost Center / مركز التكلفة');
+      let html = '', tot = 0, cnt = 0;
+      MON.forEach(sec => {
+        html += `<tr class="cat"><td colspan="4">${esc(LANG === 'en' ? sec.en : sec.en + ' — ' + (MON_AR[sec.en] || ''))}</td></tr>`;
+        sec.items.forEach(it => {
+          const vals = rows[it.code] || it.lines.map(() => ''), n = it.lines.length; tot++;
+          if (vals.some(x => x !== '' && x !== undefined)) cnt++;
+          const p = localProducts.find(x => x.code === it.code);
+          const ar = (LANG !== 'en' && p) ? `<div class="ar">${esc(p.name_ar)}</div>` : '';
+          it.lines.forEach((ln, i) => {
+            html += '<tr>' + (i === 0 ? `<td rowspan="${n}" class="mc">${it.code}</td><td rowspan="${n}" class="mnm">${esc(it.name)}${ar}</td>` : '') +
+              `<td>${esc(ln)}</td><td class="mv">${esc(vals[i])}</td></tr>`;
+          });
+        });
+      });
+      $('mnBody').innerHTML = html;
+      $('mnStatus').textContent = (v ? L('📁 جرد محفوظ — ', '📁 Saved count — ') : L('🔴 مباشر — ', '🔴 Live — ')) + L(`تم جرد ${cnt} من ${tot} صنف`, `${cnt} of ${tot} items counted`);
+      $('mnSaveBtn').style.display = v ? 'none' : ''; $('mnLiveBtn').style.display = v ? '' : 'none';
+      $('mnNote').textContent = L('الأعداد تُسحب مباشرة من صفحة المنتجات بنفس ترتيب قائمة Oracle (Stock Take List INV2610-49325)، وتعدّلها من صفحة المنتج.',
+        'Counts are pulled live from the products page in the same order as the Oracle list (Stock Take List INV2610-49325); edit them from the product page.');
+    }
+    function mnToLive() { mnView = null; mnRender(); }
+    function mnSave() {
+      if (!confirm(L('حفظ الجرد الشهري بالأعداد الحالية؟ تُحفظ نسخة ثابتة لا تتغير.', 'Save the monthly count with the current numbers? A fixed copy is stored.'))) return;
+      const snap = { id: Date.now(), hdr: { date: mnHdr.date, listNo: mnHdr.listNo, cost: mnHdr.cost }, rows: mnLive(), savedAt: new Date().toISOString() };
+      mnDB.list.push(snap); mnSaveDB(); mnView = snap; mnRender(); mnRenderArch(); $('mnArch').style.display = 'block';
+      alert(L('تم حفظ الجرد الشهري ✅', 'Monthly count saved ✅'));
+    }
+    function mnToggleArch() { const a = $('mnArch'); a.style.display = a.style.display === 'block' ? 'none' : 'block'; mnRenderArch(); }
+    function mnRenderArch() {
+      const list = mnDB.list.slice().sort((a, b) => b.id - a.id);
+      $('mnArch').innerHTML = `<div style="font-weight:900;margin-bottom:6px">${L('الجرد المحفوظ','Saved counts')} (${list.length})</div>` +
+        (list.length ? list.map(x => `<div class="it"><span>${esc(x.hdr.date)} • ${esc(x.hdr.listNo || '-')}</span><button class="ss-btn ss-main" onclick="mnLoad(${x.id})">${L('فتح','Open')}</button><button class="ss-btn ss-red" onclick="mnDel(${x.id})">${L('حذف','Delete')}</button></div>`).join('')
+          : `<div style="color:#64748b;font-size:12px">${L('لا يوجد جرد شهري محفوظ بعد.','No saved monthly counts yet.')}</div>`);
+    }
+    function mnLoad(id) { const x = mnDB.list.find(y => y.id === id); if (!x) return; mnView = x; mnRender(); $('mnArch').style.display = 'none'; }
+    function mnDel(id) {
+      if (!confirm(L('حذف هذا الجرد المحفوظ نهائياً؟', 'Delete this saved count permanently?'))) return;
+      mnDB.list = mnDB.list.filter(y => y.id !== id); if (mnView && mnView.id === id) mnView = null; mnSaveDB(); mnRender(); mnRenderArch();
+    }
+    document.addEventListener('input', e => {
+      const t = e.target; if (!t.dataset || t.dataset.mh === undefined || mnView) return;
+      mnHdr[t.dataset.mh] = t.value; try { localStorage.setItem(MN_HDR_KEY, JSON.stringify(mnHdr)); } catch(x) {}
+    });
+    function doPrint(id) {
+      document.querySelectorAll('.pr-target').forEach(e => e.classList.remove('pr-target'));
+      $(id).classList.add('pr-target'); window.print();
+    }
+    window.addEventListener('afterprint', () => document.querySelectorAll('.pr-target').forEach(e => e.classList.remove('pr-target')));
+
+    window.onload = initApp;
+    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+      window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+    }
+  </script>
+</body>
+</html>
