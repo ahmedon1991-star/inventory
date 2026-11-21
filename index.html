@@ -419,7 +419,8 @@ table{border-collapse:collapse}
     <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl relative modal-content-enter p-6 text-center">
       <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4"><span class="text-3xl">⚠️</span></div>
       <h3 class="text-xl font-extrabold text-slate-800 mb-2">تصفير جميع الكميات؟</h3>
-      <p class="text-slate-500 text-sm mb-6">هل أنت متأكد أنك تريد مسح وتصفير جميع الأرقام المدخلة في الجرد؟ (ورقة الوردية المحفوظة لن تتأثر)</p>
+      <p class="text-slate-500 text-sm mb-4">هل أنت متأكد أنك تريد مسح وتصفير جميع الأرقام المدخلة في الجرد؟ (سعات الباكيت وورقة الوردية المحفوظة لن تتأثر)</p>
+      <label id="resetOrdersRow" class="flex items-center justify-center gap-2 text-sm font-bold text-slate-700 mb-6 cursor-pointer"><input type="checkbox" id="resetOrders" class="w-5 h-5"> <span>مسح قائمة الطلب أيضاً</span> <span id="resetOrdersCount" class="text-slate-500"></span></label>
       <div class="flex gap-3">
         <button onclick="closeResetModal()" class="flex-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-3 rounded-xl transition">إلغاء</button>
         <button onclick="resetAllStock()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-red-600/30">نعم، صَفِّر</button>
@@ -533,6 +534,7 @@ table{border-collapse:collapse}
     /* ===== أدوات عامة: تهريب HTML والتحقق من البيانات المحفوظة والمسترجعة ===== */
     const str = v => v == null ? '' : String(v);
     const esc = s => str(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    const toInt = v => Math.max(0, parseInt(v, 10) || 0);
     const cleanCount = v => { if (v === '' || v == null) return ''; const n = parseInt(v, 10); return isNaN(n) ? '' : Math.max(0, n); };
     const SAFE_ID = /^[A-Za-z0-9_-]{1,80}$/;
     const UNIT_KEY = { CTN: 'C', PKT: 'K', PCS: 'P' };
@@ -910,7 +912,8 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
 "إلغاء": "Cancel",
 "حفظ في القائمة": "Save to list",
 "تصفير جميع الكميات؟": "Reset all quantities?",
-"هل أنت متأكد أنك تريد مسح وتصفير جميع الأرقام المدخلة في الجرد؟ (ورقة الوردية المحفوظة لن تتأثر)": "Are you sure you want to clear all numbers entered in the count? (Saved shift sheets are not affected)",
+"هل أنت متأكد أنك تريد مسح وتصفير جميع الأرقام المدخلة في الجرد؟ (سعات الباكيت وورقة الوردية المحفوظة لن تتأثر)": "Are you sure you want to clear all numbers entered in the count? (Pack sizes and saved shift sheets are not affected)",
+"مسح قائمة الطلب أيضاً": "Also clear the order list",
 "نعم، صَفِّر": "Yes, reset",
 "إضافة منتج جديد": "Add New Product",
 "رقم المنتج (الكود) *": "Product code *",
@@ -1059,6 +1062,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
     const unitFlt = document.getElementById('unitFilter');
 
     function initApp() {
+      prefillPackSizes();
       buildCategoryTabs(); buildAddModalCategories(); renderProducts(); updateCartBadge();
       searchInp.addEventListener('input', renderProducts);
       unitFlt.addEventListener('change', renderProducts);
@@ -1121,7 +1125,12 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       alert('تم نسخ قائمة الطلبات بالكميات بنجاح! يمكنك لصقها في الواتساب الآن.');
     }
 
-    function toggleMode(id) { const prod = localProducts.find(p => p.id === id); if(prod) { prod.mode = prod.mode === 'detailed' ? 'simple' : 'detailed'; saveData(); syncSheetFromProduct(prod); renderProducts(); } }
+    function toggleMode(id) {
+      const prod = localProducts.find(p => p.id === id); if(!prod) return;
+      prod.mode = prod.mode === 'detailed' ? 'simple' : 'detailed';
+      if (prod.mode === 'detailed' && prod.pack_size === '') { const s = oraclePackSize(prod.code); if (s) prod.pack_size = s; }
+      saveData(); syncSheetFromProduct(prod); renderProducts();
+    }
     function handleDirectInput(id, field, el) {
       const prod = localProducts.find(p => p.id === id);
       if(prod) { const raw = el.value.trim(); prod[field] = raw === '' ? '' : parseInt(raw, 10) || 0; saveData(); updateCardTotal(prod); syncSheetFromProduct(prod); }
@@ -1135,19 +1144,21 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
         updateCardTotal(prod);
       }
     }
+    // الإجمالي التفصيلي: باكيتات بلا سعة لا يمكن تحويلها لحبات، فنعرض "—" وتنبيهاً بدل رقم ناقص
+    function detailedTotals(p) {
+      const packs = toInt(p.packs), size = toInt(p.pack_size), loose = toInt(p.loose);
+      if (packs > 0 && size > 0) return { total: (packs * size + loose).toLocaleString(LOC()), formula: `(${packs} × ${size}) + ${loose}` };
+      if (packs > 0) return { total: '—', formula: L('⚠️ أدخل سعة الباكيت', '⚠️ Enter packet size') };
+      return { total: loose.toLocaleString(LOC()), formula: `${loose} ${L('حبة','pcs')}` };
+    }
     function updateCardTotal(prod) {
+      const el = document.getElementById(`total_${prod.id}`);
       if(prod.mode === 'simple') {
-        const qtyVal = parseInt(prod.qty, 10) || 0; const el = document.getElementById(`total_${prod.id}`);
-        if(el) el.innerHTML = `${qtyVal.toLocaleString(LOC())} <span class="text-[10px] text-white font-normal">${esc(prod.unit_label)}</span>`;
+        if(el) el.innerHTML = `${toInt(prod.qty).toLocaleString(LOC())} <span class="text-[10px] text-white font-normal">${esc(prod.unit_label)}</span>`;
       } else {
-        const packs = parseInt(prod.packs, 10) || 0, packSize = parseInt(prod.pack_size, 10) || 0, loose = parseInt(prod.loose, 10) || 0;
-        let total = 0, formulaText = '';
-        if(packs > 0 && packSize > 0) { total = packs * packSize + loose; formulaText = `(${packs} × ${packSize}) + ${loose}`; }
-        else if(packs > 0) { total = loose; formulaText = `أدخل سعة الباكيت`; }
-        else { total = loose; formulaText = `${loose} ${L('حبة','pcs')}`; }
-        const el = document.getElementById(`total_${prod.id}`);
-        if(el) el.innerHTML = `${total.toLocaleString(LOC())} <span class="text-[10px] text-white font-normal">حبة</span>`;
-        const f = document.getElementById(`formula_${prod.id}`); if(f) f.innerText = formulaText;
+        const d = detailedTotals(prod);
+        if(el) el.innerHTML = `${d.total} <span class="text-[10px] text-white font-normal">حبة</span>`;
+        const f = document.getElementById(`formula_${prod.id}`); if(f) f.innerText = d.formula;
       }
     }
     function getMeta(catName) { return catMeta[catName] || { bd: '#cbd5e1', bg: '#ffffff', icon: '🏷️' }; }
@@ -1202,11 +1213,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
               <span class="text-base font-black font-sans text-amber-300" id="total_${p.id}">${qtyVal.toLocaleString(LOC())} <span class="text-[10px] text-white font-normal">${esc(p.unit_label)}</span></span>
             </div>`;
         } else {
-          const packs = parseInt(p.packs, 10) || 0, packSize = parseInt(p.pack_size, 10) || 0, loose = parseInt(p.loose, 10) || 0;
-          let total = 0, formulaText = '';
-          if(packs > 0 && packSize > 0) { total = packs * packSize + loose; formulaText = `(${packs} × ${packSize}) + ${loose}`; }
-          else if(packs > 0) { total = loose; formulaText = `أدخل سعة الباكيت`; }
-          else { total = loose; formulaText = `${loose} ${L('حبة','pcs')}`; }
+          const d = detailedTotals(p);
           inputsHtml = `
             <div class="flex items-center justify-between bg-white/80 border border-black/10 rounded-xl p-1.5 shadow-sm">
               <span class="text-xs font-bold text-slate-700 pr-1 flex items-center gap-1"><span class="text-blue-600 text-sm">📦</span> عدد الباكيتات:</span>
@@ -1229,8 +1236,8 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
               </div>
             </div>
             <div class="bg-slate-900 text-white p-2.5 rounded-xl shadow-md flex items-center justify-between">
-              <div><span class="text-[10px] font-bold text-slate-400 block leading-none">الإجمالي الفعلي</span><span class="text-[10px] text-amber-400 font-mono" id="formula_${p.id}">${formulaText}</span></div>
-              <span class="text-base font-black font-sans text-amber-300" id="total_${p.id}">${total.toLocaleString(LOC())} <span class="text-[10px] text-white font-normal">حبة</span></span>
+              <div><span class="text-[10px] font-bold text-slate-400 block leading-none">الإجمالي الفعلي</span><span class="text-[10px] text-amber-400 font-mono" id="formula_${p.id}">${esc(d.formula)}</span></div>
+              <span class="text-base font-black font-sans text-amber-300" id="total_${p.id}">${d.total} <span class="text-[10px] text-white font-normal">حبة</span></span>
             </div>`;
         }
         const card = document.createElement('div');
@@ -1273,11 +1280,19 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
     }
 
     const rModal = document.getElementById('resetModal');
-    function openResetModal() { rModal.style.display = 'flex'; }
+    function openResetModal() {
+      const n = Object.keys(orderQuantities).length;
+      document.getElementById('resetOrders').checked = false;
+      document.getElementById('resetOrdersRow').style.display = n ? '' : 'none';
+      document.getElementById('resetOrdersCount').textContent = `(${n})`;
+      rModal.style.display = 'flex';
+    }
     function closeResetModal() { rModal.style.display = 'none'; }
     function resetAllStock() {
-      localProducts.forEach(p => { p.qty = ''; p.packs = ''; p.pack_size = ''; p.loose = ''; });
-      orderQuantities = {}; saveOrderQtys(); saveData(); db.active = null; ssSave(); renderProducts(); updateCartBadge(); closeResetModal();
+      // سعة الباكيت معلومة ثابتة عن المنتج وليست عدّاً، فلا تُمسح. وقائمة الطلب تُمسح فقط إذا اختار المستخدم ذلك
+      localProducts.forEach(p => { p.qty = ''; p.packs = ''; p.loose = ''; });
+      if (document.getElementById('resetOrders').checked) { orderQuantities = {}; saveOrderQtys(); }
+      saveData(); db.active = null; ssSave(); renderProducts(); updateCartBadge(); closeResetModal();
     }
 
     /* =====================================================================
@@ -1390,13 +1405,14 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
     }
     function hasData(s) { return s.open || s.close || Object.values(s.rows).some(r => Object.values(r).some(v => v)); }
 
+    // null = لم يُجرد بعد. سعة الباكيت وحدها ليست جرداً، وباكيتات بلا سعة لا يمكن تحويلها لحبات فلا تُحسب رقماً ناقصاً
+    function needsPackSize(p) { return p.mode === 'detailed' && toInt(p.packs) > 0 && !(toInt(p.pack_size) > 0); }
     function countOf(p) {
       if (p.mode === 'detailed') {
-        if (p.packs === '' && p.loose === '' && p.pack_size === '') return null;
-        const k = parseInt(p.packs,10)||0, s = parseInt(p.pack_size,10)||0, l = parseInt(p.loose,10)||0;
-        return (k > 0 && s > 0) ? k*s + l : l;
+        if ((p.packs === '' && p.loose === '') || needsPackSize(p)) return null;
+        return toInt(p.packs) * toInt(p.pack_size) + toInt(p.loose);
       }
-      return (p.qty === '' || p.qty === undefined) ? null : (parseInt(p.qty,10)||0);
+      return (p.qty === '' || p.qty === undefined) ? null : toInt(p.qty);
     }
 
     function ssRenderHead() {
@@ -1438,19 +1454,20 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
 
     function ssPull() {
       const s = st(); if (s.saved || s.closeConfirmed) return;
-      const col = !s.openConfirmed ? 'o' : 'c'; let ok = 0, empty = 0, manual = 0;
+      const col = !s.openConfirmed ? 'o' : 'c'; let ok = 0, empty = 0, manual = 0, noSize = 0;
       SS_ROWS.forEach(r => {
         if (r[5]) return;
-        const p = localProducts.find(x => x.code === (r[3] || r[1])); const n = p ? countOf(p) : null;
+        const p = localProducts.find(x => x.code === (r[3] || r[1]));
         if (!p) { manual++; return; }
-        if (n === null) { empty++; return; }
+        if (needsPackSize(p)) { noSize++; return; } // لا نكتب رقماً ناقصاً (الحبات فقط بدون الباكيتات)
+        const n = countOf(p); if (n === null) { empty++; return; }
         (s.rows[r[1]] = s.rows[r[1]] || {})[col] = String(n); ok++;
       });
       if (col === 'o') s.open = true; else s.close = true;
       db.active = cur;
       ssSave(); ssRenderRows(); ssStatus(); ssRenderArch();
-      alert(L(`تم سحب ${ok} صنف في عمود ${col==='o'?'الاستلام (Opening)':'التسليم (Closing)'}.\nلم تُجرد بعد: ${empty}\nإدخال يدوي: ${manual}\nالعمود الآن مربوط مباشرة بصفحة المنتج.`,
-        `Pulled ${ok} items into the ${col==='o'?'Receive (Opening)':'Handover (Closing)'} column.\nNot counted yet: ${empty}\nManual: ${manual}\nThis column is now linked live to the product page.`));
+      alert(L(`تم سحب ${ok} صنف في عمود ${col==='o'?'الاستلام (Opening)':'التسليم (Closing)'}.\nلم تُجرد بعد: ${empty}\nإدخال يدوي: ${manual}` + (noSize ? `\n⚠️ فيها باكيتات بدون سعة الباكيت (لم تُسحب): ${noSize}` : '') + `\nالعمود الآن مربوط مباشرة بصفحة المنتج.`,
+        `Pulled ${ok} items into the ${col==='o'?'Receive (Opening)':'Handover (Closing)'} column.\nNot counted yet: ${empty}\nManual: ${manual}` + (noSize ? `\n⚠️ Packets without a pack size (not pulled): ${noSize}` : '') + `\nThis column is now linked live to the product page.`));
     }
     function ssConfirm() {
       const s = st(); if (s.saved) return;
@@ -1862,6 +1879,18 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       if (l[0] === '#') MON.push({ en: l.slice(1), items: [] });
       else if (l.trim()) { const a = l.split('|'); MON[MON.length - 1].items.push({ code: a[0], name: a[1], lines: a[2].split(';') }); }
     });
+    // سعات الباكيت المعروفة من قائمة Oracle (مثل PKT 25 PCS) تُستخدم كقيمة افتراضية للأصناف التفصيلية
+    let PACK_SIZES = null;
+    function oraclePackSize(code) {
+      if (!PACK_SIZES) { PACK_SIZES = {}; MON.forEach(sec => sec.items.forEach(it => it.lines.some(l => { const m = /^PKT (\d+) PCS$/.exec(l); if (m) PACK_SIZES[it.code] = +m[1]; return !!m; }))); }
+      return PACK_SIZES[code] || 0;
+    }
+    function prefillPackSizes() {
+      let ch = false;
+      // بعد تعبئة السعة نحدّث الورقة المربوطة أيضاً، حتى لا يبقى فيها رقم ناقص سُحب قبل التحديث
+      localProducts.forEach(p => { if (p.mode === 'detailed' && p.pack_size === '') { const s = oraclePackSize(p.code); if (s) { p.pack_size = s; ch = true; syncSheetFromProduct(p); } } });
+      if (ch) saveData();
+    }
     let mnDB = { list: [] }; (function(){ const x = loadJSON(MN_KEY); if (x === undefined) return; const n = normMonthly(x); if (n) mnDB = n; else { dataProblem = true; keepCorrupt(MN_KEY); } })();
     let mnHdr = { listNo: '', cost: 'DD - Al Nahda Road' }; try { Object.assign(mnHdr, JSON.parse(localStorage.getItem(MN_HDR_KEY)) || {}); } catch(e) {}
     let mnView = null;
@@ -1872,10 +1901,12 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       const out = lines.map(() => ''); const last = lines.length - 1;
       const ix = tok => lines.findIndex(l => l.split(' ')[0] === tok);
       if (p.mode === 'detailed') {
-        if (p.packs === '' && p.loose === '' && p.pack_size === '') return out;
-        const iP = ix('PKT'), iU = ix('PCS');
-        if (iP >= 0 && iP !== (iU >= 0 ? iU : last)) { out[iP] = String(parseInt(p.packs, 10) || 0); out[iU >= 0 ? iU : last] = String(parseInt(p.loose, 10) || 0); }
-        else out[last] = String(countOf(p));
+        if (p.packs === '' && p.loose === '') return out; // سعة الباكيت وحدها ليست جرداً
+        const iP = ix('PKT'), iU = ix('PCS'), iL = iU >= 0 ? iU : last;
+        const size = toInt(p.pack_size), oSize = oraclePackSize(p.code);
+        // الباكيتات تُكتب في سطر PKT فقط إذا كانت سعتها هي سعة Oracle نفسها، وإلا يُكتب الإجمالي بالحبة
+        if (iP >= 0 && iP !== iL && (!size || !oSize || size === oSize)) { out[iP] = String(toInt(p.packs)); out[iL] = String(toInt(p.loose)); }
+        else { const n = countOf(p); out[iL] = n === null ? `${toInt(p.packs)} PKT + ${toInt(p.loose)}` : String(n); }
       } else {
         const n = countOf(p); if (n === null) return out;
         let i = ix(p.unit_code), tag = '';
