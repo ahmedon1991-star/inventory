@@ -566,7 +566,7 @@ table{border-collapse:collapse}
         const h = s.hdr, rows = {};
         if (s.rows && typeof s.rows === 'object') Object.keys(s.rows).forEach(rk => {
           const r = s.rows[rk]; if (!r || typeof r !== 'object') return;
-          const o = {}; ['o', 'i', 't', 'c', 'code', 'name'].forEach(f => { if (r[f] != null) o[f] = str(r[f]); }); rows[rk] = o;
+          const o = {}; ['o', 'i', 't', 'c', 'code', 'name', 'uo', 'uc'].forEach(f => { if (r[f] != null) o[f] = str(r[f]); }); rows[rk] = o;
         });
         const old = s.saved === undefined; // ورقة من نسخة أقدم بدون حالة الحفظ
         out.sheets[k] = { hdr: { date: str(h.date), shift: str(h.shift), shiftNo: str(h.shiftNo), stockNo: str(h.stockNo), empId: str(h.empId), empName: str(h.empName) }, rows,
@@ -1361,8 +1361,12 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       ['Spare','SP1','','','',1],['Spare','SP2','','','',1],['Spare','SP3','','','',1],['Spare','SP4','','','',1],['Spare','SP5','','','',1]
     ];
 
-    const SS_BYCODE = {}, SS_CODEOF = {};
-    SS_ROWS.forEach(r => { if (!r[5]) { SS_BYCODE[r[3] || r[1]] = r[1]; SS_CODEOF[r[1]] = r[3] || r[1]; } });
+    const SS_BYCODE = {}, SS_CODEOF = {}, SS_ROW = {};
+    SS_ROWS.forEach(r => { SS_ROW[r[1]] = r; if (!r[5]) { SS_BYCODE[r[3] || r[1]] = r[1]; SS_CODEOF[r[1]] = r[3] || r[1]; } });
+    // وحدة العدّ في الورقة = وحدة العدّ الفعلية في صفحة المنتج: التفصيلي يُجمع دائماً بالحبة، وإلا الوحدة الصريحة للصف إن وُجدت، وإلا وحدة المنتج
+    const sheetUnit = (r, p) => (p && p.mode === 'detailed') ? 'PCS' : ((r && r[4]) || (p ? p.unit_code : 'PCS'));
+    // كل عمود مربوط يحفظ وحدته وقت الكتابة (uo للاستلام، uc للتسليم)؛ إن اختلفتا تُعرض الاثنتان
+    const rowUnit = (r, v, p) => { if (r[5]) return 'PCS'; const a = v.uo, b = v.uc; return (a && b && a !== b) ? a + '/' + b : (a || b || sheetUnit(r, p)); };
     const $ = id => document.getElementById(id);
     const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
 
@@ -1387,8 +1391,8 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       const s = db.active ? db.sheets[db.active] : null; if (!s) return;
       const col = ssLinkedCol(s); if (!col) return;
       const key = SS_BYCODE[prod.code]; if (!key) return;
-      const n = countOf(prod);
-      (s.rows[key] = s.rows[key] || {})[col] = (n === null ? '' : String(n));
+      const n = countOf(prod), row = s.rows[key] = s.rows[key] || {};
+      row[col] = (n === null ? '' : String(n)); row['u' + col] = sheetUnit(SS_ROW[key], prod);
       ssSave();
       if ($('ssModal').style.display === 'flex' && cur === db.active) ssRenderRows();
     }
@@ -1427,13 +1431,13 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       let h = '', cat = '';
       SS_ROWS.forEach(r => {
         if (r[0] !== cat) { cat = r[0]; h += `<tr class="cat"><td colspan="7">${cat}</td></tr>`; }
-        const k = r[1], v = st().rows[k] || {}, spare = !!r[5], manual = !spare && !localProducts.some(x => x.code === (r[3] || r[1]));
+        const k = r[1], v = st().rows[k] || {}, spare = !!r[5], p = spare ? null : localProducts.find(x => x.code === (r[3] || r[1])), manual = !spare && !p;
         const S = st(), ro = S.saved ? ' readonly' : '';
         const cell = f => `<td class="c"><input data-k="${k}" data-f="${f}" inputmode="decimal" value="${esc(v[f])}"${ssLocked(S, f) ? ' readonly' : ''}></td>`;
         h += `<tr class="${manual?'man':''}">` +
           (spare ? `<td><input class="t" data-k="${k}" data-f="code" value="${esc(v.code)}"${ro}></td><td class="nm"><input class="t" data-k="${k}" data-f="name" value="${esc(v.name)}"${ro}></td>`
                  : `<td style="white-space:nowrap">${r[3] || r[1]}</td><td class="nm">${esc(r[2])}</td>`) +
-          `<td class="c">${r[4] || 'PCS'}</td>${cell('o')}${cell('i')}${cell('t')}${cell('c')}</tr>`;
+          `<td class="c">${esc(rowUnit(r, v, p))}</td>${cell('o')}${cell('i')}${cell('t')}${cell('c')}</tr>`;
       });
       $('ssBody').innerHTML = h;
     }
@@ -1461,7 +1465,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
         if (!p) { manual++; return; }
         if (needsPackSize(p)) { noSize++; return; } // لا نكتب رقماً ناقصاً (الحبات فقط بدون الباكيتات)
         const n = countOf(p); if (n === null) { empty++; return; }
-        (s.rows[r[1]] = s.rows[r[1]] || {})[col] = String(n); ok++;
+        const row = s.rows[r[1]] = s.rows[r[1]] || {}; row[col] = String(n); row['u' + col] = sheetUnit(r, p); ok++;
       });
       if (col === 'o') s.open = true; else s.close = true;
       db.active = cur;
@@ -1517,7 +1521,8 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       SS_ROWS.forEach(r => {
         const v = st().rows[r[1]] || {}, nm = r[5] ? v.name : r[2];
         if (!nm || !(v.o || v.i || v.t || v.c)) return;
-        t += `${nm}: ${v.o||0} | ${v.i||0} | ${v.t||0} | ${v.c||0}\n`;
+        const u = rowUnit(r, v, r[5] ? null : localProducts.find(x => x.code === (r[3] || r[1])));
+        t += `${nm}${u !== 'PCS' ? ' [' + u + ']' : ''}: ${v.o||0} | ${v.i||0} | ${v.t||0} | ${v.c||0}\n`;
       });
       window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank');
     }
@@ -1561,7 +1566,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
         if (ssLocked(st(), t.dataset.f)) return;
         const o = st().rows[t.dataset.k] = st().rows[t.dataset.k] || {}; o[t.dataset.f] = t.value; ssSave();
         if ((t.dataset.f === 'o' || t.dataset.f === 'c') && cur === db.active && t.dataset.f === ssLinkedCol(st()) && SS_CODEOF[t.dataset.k]) {
-          const prod = localProducts.find(x => x.code === SS_CODEOF[t.dataset.k]); if (prod) applyCountToProduct(prod, t.value);
+          const prod = localProducts.find(x => x.code === SS_CODEOF[t.dataset.k]); if (prod) { o['u' + t.dataset.f] = sheetUnit(SS_ROW[t.dataset.k], prod); ssSave(); applyCountToProduct(prod, t.value); }
         }
       }
       else if (t.dataset.h && t.dataset.h !== 'date' && t.dataset.h !== 'shift') { if (st().saved) return; st().hdr[t.dataset.h] = t.value; ssSave(); }
