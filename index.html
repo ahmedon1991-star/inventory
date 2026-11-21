@@ -388,6 +388,11 @@ table{border-collapse:collapse}
   </header>
 
   <main class="max-w-7xl mx-auto px-4 py-4 md:py-8">
+    <div id="bkBanner" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;background:#fffbeb;border:1px solid #fcd34d;color:#78350f;border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:13px;font-weight:700">
+      <span>💾</span><span id="bkText" style="flex:1;min-width:150px"></span>
+      <button onclick="ssBackup()" style="background:#16a34a;color:#fff;border-radius:10px;padding:7px 12px;font-weight:800;font-size:12px">حفظ نسخة الآن</button>
+      <button onclick="bkDismiss()" title="لاحقاً" style="padding:6px 8px;color:#92400e;font-weight:800">✕</button>
+    </div>
     <div class="bg-white rounded-2xl p-3 md:p-6 border border-slate-200 shadow-sm mb-4 md:mb-6 flex flex-col md:flex-row gap-3">
       <div class="relative flex-1">
         <span class="absolute srch-ico top-1/2 right-4 -translate-y-1/2 text-slate-400 text-xl">🔍</span>
@@ -937,6 +942,8 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
 "تصفير جميع الكميات؟": "Reset all quantities?",
 "هل أنت متأكد أنك تريد مسح وتصفير جميع الأرقام المدخلة في الجرد؟ (سعات الباكيت وورقة الوردية المحفوظة لن تتأثر)": "Are you sure you want to clear all numbers entered in the count? (Pack sizes and saved shift sheets are not affected)",
 "مسح قائمة الطلب أيضاً": "Also clear the order list",
+"حفظ نسخة الآن": "Save a backup now",
+"لاحقاً": "Later",
 "جرد المخزون": "Inventory",
 "نعم، صَفِّر": "Yes, reset",
 "إضافة منتج جديد": "Add New Product",
@@ -1046,7 +1053,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       document.title = L('نظام إدارة وجرد المخزون الشامل', 'Complete Inventory Management System');
       document.getElementById('langBtn').textContent = l === 'en' ? 'ع' : 'EN';
       trTree(document.body);
-      buildCategoryTabs(); buildAddModalCategories(); renderProducts(); updateCartBadge();
+      buildCategoryTabs(); buildAddModalCategories(); renderProducts(); updateCartBadge(); bkCheck();
       if (document.getElementById('orderModal').style.display === 'flex') openOrderModal();
       if (cur && document.getElementById('ssModal').style.display === 'flex') ssRefresh();
       if (document.getElementById('mnModal').style.display === 'flex') mnRender();
@@ -1087,7 +1094,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
 
     function initApp() {
       prefillPackSizes();
-      buildCategoryTabs(); buildAddModalCategories(); renderProducts(); updateCartBadge();
+      buildCategoryTabs(); buildAddModalCategories(); renderProducts(); updateCartBadge(); bkCheck();
       searchInp.addEventListener('input', renderProducts);
       unitFlt.addEventListener('change', renderProducts);
       try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e) {}
@@ -1145,8 +1152,21 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
         const p = localProducts.find(prod => prod.id === id);
         if(p) text += `${i+1}. [${p.code}] ${pn(p)}\n   👈 ${L('الكمية المطلوبة','Quantity needed')}: ${orderQuantities[id]} (${tr(p.unit_label)})\n\n`;
       });
-      try { navigator.clipboard.writeText(text); } catch(e) {}
-      alert('تم نسخ قائمة الطلبات بالكميات بنجاح! يمكنك لصقها في الواتساب الآن.');
+      copyText(text, 'تم نسخ قائمة الطلبات بالكميات بنجاح! يمكنك لصقها في الواتساب الآن.');
+    }
+    // نسخ نص للحافظة مع رسالة صادقة: نجح النسخ أو لم ينجح
+    function copyText(text, okMsg, failMsg) {
+      let shown = false;
+      const done = ok => { if (shown) return; shown = true; alert(ok ? okMsg : (failMsg || L('تعذّر النسخ تلقائياً على هذا الجهاز.', 'Could not copy automatically on this device.'))); };
+      const legacy = () => { try { const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok; } catch(e) { return false; } };
+      try { if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => done(true), () => done(legacy()));
+        // بعض المتصفحات تتأخر أو لا ترد: نجرب الطريقة القديمة، ونعلن الفشل فقط إن لم يأتِ أي رد
+        setTimeout(() => { if (!shown && legacy()) done(true); }, 1500);
+        setTimeout(() => { if (!shown) done(false); }, 10000);
+        return;
+      } } catch(e) {}
+      done(legacy());
     }
 
     function toggleMode(id) {
@@ -1290,7 +1310,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       });
     }
 
-    function copyCode(code) { try { navigator.clipboard.writeText(code); } catch(e) {} alert(L('تم نسخ الكود: ', 'Code copied: ') + code); }
+    function copyCode(code) { copyText(code, L('تم نسخ الكود: ', 'Code copied: ') + code, L('الكود: ', 'Code: ') + code); }
 
     const aModal = document.getElementById('addModal');
     function buildAddModalCategories() {
@@ -1564,19 +1584,45 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
         const u = rowUnit(r, v, r[5] ? null : localProducts.find(x => x.code === (r[3] || r[1])));
         t += `${nm}${u !== 'PCS' ? ' [' + u + ']' : ''}: ${v.o||0} | ${v.i||0} | ${v.t||0} | ${v.c||0}\n`;
       });
+      // بدون إنترنت لا يفتح واتساب: ننسخ النص ليُرسل عند عودة الاتصال
+      if (navigator.onLine === false) { copyText(t, L('لا يوجد إنترنت الآن، فنُسخ نص الورقة. الصقه في واتساب عند عودة الاتصال.', 'No internet right now, so the sheet text was copied. Paste it into WhatsApp when you are back online.'),
+        L('لا يوجد إنترنت الآن. أرسل الورقة عند عودة الاتصال.', 'No internet right now. Send the sheet when you are back online.')); return; }
       window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank');
     }
+    // حفظ ملف النسخة الاحتياطية على الجهاز (يعمل بدون إنترنت):
+    // الجوال: نافذة المشاركة وفيها "حفظ في الملفات" أو Drive أو واتساب. وإلا: تنزيل مباشر إلى التنزيلات.
     function ssBackup() {
       const data = { v: 2, saved: new Date().toISOString(), inventory: localProducts, orders: orderQuantities, sheets: db, monthly: mnDB, monthlyHdr: mnHdr };
-      const json = JSON.stringify(data);
-      try {
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
-        a.download = 'dunkin-backup-' + todayStr() + '.json';
-        document.body.appendChild(a); a.click(); a.remove();
-      } catch(e) {}
-      try { navigator.clipboard.writeText(json).catch(() => {}); alert('تم إنشاء النسخة الاحتياطية، ونُسخت أيضاً إلى الحافظة. الصقها في ملف نصي للاحتفاظ بها.'); } catch(e) { alert('تم إنشاء النسخة الاحتياطية.'); }
+      const json = JSON.stringify(data), name = 'dunkin-backup-' + todayStr() + '.json';
+      const done = msg => { try { localStorage.setItem(BK_KEY, String(Date.now())); } catch(e) {} bkCheck(); alert(msg); };
+      const download = () => {
+        try {
+          const url = URL.createObjectURL(new Blob([json], { type: 'application/json' })), a = document.createElement('a');
+          a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 30000);
+          done(L('تم حفظ ملف النسخة الاحتياطية في التنزيلات:\n', 'Backup file saved to Downloads:\n') + name);
+        } catch(e) { alert(L('تعذّر حفظ الملف على هذا الجهاز.', 'Could not save the file on this device.')); }
+      };
+      let file = null, can = false;
+      try { file = new File([json], name, { type: 'application/json' }); can = !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })); } catch(e) {}
+      if (can) navigator.share({ files: [file], title: name }).then(
+        () => done(L('تم حفظ ملف النسخة الاحتياطية:\n', 'Backup file saved:\n') + name),
+        err => { if (!err || err.name !== 'AbortError') download(); }); // الإلغاء من المستخدم لا يُعتبر خطأ
+      else download();
     }
+    // تذكير بحفظ نسخة: البيانات موجودة على هذا الجهاز فقط، فنذكّر إن مرّ أسبوع بدون نسخة
+    const BK_KEY = 'last_backup_at', BK_SNOOZE = 'backup_snooze';
+    function bkCheck() {
+      const el = document.getElementById('bkBanner'); if (!el) return;
+      let last = 0, snooze = 0; try { last = +localStorage.getItem(BK_KEY) || 0; snooze = +localStorage.getItem(BK_SNOOZE) || 0; } catch(e) {}
+      const has = localProducts.some(p => countOf(p) !== null) || Object.keys(db.sheets).some(k => hasData(db.sheets[k])) || mnDB.list.length > 0;
+      const days = last ? Math.floor((Date.now() - last) / 864e5) : null;
+      const show = has && (days === null || days >= 7) && Date.now() > snooze;
+      el.style.display = show ? 'flex' : 'none';
+      if (show) document.getElementById('bkText').textContent = days === null
+        ? L('لم تحفظ نسخة احتياطية بعد، وبياناتك موجودة على هذا الجهاز فقط.', 'No backup saved yet, and your data is only on this device.')
+        : L(`آخر نسخة احتياطية قبل ${days} يوم.`, `Last backup was ${days} days ago.`);
+    }
+    function bkDismiss() { try { localStorage.setItem(BK_SNOOZE, String(Date.now() + 864e5)); } catch(e) {} bkCheck(); }
     function ssRestore(inp) {
       const f = inp.files && inp.files[0]; if (!f) return;
       const rd = new FileReader();
@@ -2034,7 +2080,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
 
     window.onload = initApp;
     if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
-      window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+      window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}); });
     }
   </script>
 </body>
