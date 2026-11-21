@@ -265,6 +265,28 @@ table{border-collapse:collapse}
     html[dir=ltr] .srch-ico{right:auto;left:1rem}
     html[dir=ltr] .srch-inp{padding-right:1rem;padding-left:3rem}
 
+    /* ===== الشريط العلوي على الجوال + زر الإضافة العائم ===== */
+    .hdr-l{min-width:0;flex:1 1 auto}
+    .hdr-l>div:last-child{min-width:0}
+    .hdr-l h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35}
+    #hdrBtns{flex-shrink:0}
+    .hdr-short,.fab{display:none}
+    @media(max-width:639px){
+      .hdr-logo,.hdr-sub,.hdr-long{display:none!important}
+      .hdr-short{display:inline}
+      #hdrBtns{gap:4px}
+      #hdrBtns>button{width:36px;height:36px;padding:0;justify-content:center}
+      /* الزر العائم في جهة العناوين (يمين بالعربي، يسار بالإنجليزي) حتى لا يغطي أزرار +/− في البطاقات */
+      .fab{display:flex;position:fixed;bottom:20px;right:16px;z-index:40;width:52px;height:52px;border-radius:9999px;align-items:center;justify-content:center;background:#0f172a;color:#fff;font-size:28px;line-height:1;box-shadow:0 10px 20px -5px rgba(15,23,42,.45)}
+      html[dir=ltr] .fab{right:auto;left:16px}
+    }
+    @media(max-width:359px){ #hdrBtns>button{width:34px;height:34px} .hdr-l h1{font-size:1rem} } /* أصغر الجوالات (320px) */
+    /* الأجهزة اللوحية: أزرار أيقونية فقط حتى يتسع العنوان كاملاً، والنصوص تعود من 1024px */
+    @media(min-width:640px) and (max-width:1023px){
+      #hdrBtns .sm\:inline,#hdrBtns .add-txt{display:none}
+      #hdrBtns .add-btn{padding-left:1rem;padding-right:1rem}
+    }
+
     /* ===== ورقة الوردية ===== */
     #ssModal{display:none;position:fixed;inset:0;z-index:60;background:#f8fafc;flex-direction:column}
     #ssModal .ss-bar{background:#fff;border-bottom:1px solid #e2e8f0;padding:10px 12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -335,14 +357,14 @@ table{border-collapse:collapse}
 <body class="min-h-screen pb-24">
 
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-3 hdr-l">
+        <div class="hdr-logo w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
           <span class="text-2xl">📦</span>
         </div>
         <div>
-          <h1 class="text-lg md:text-xl font-extrabold text-slate-800 leading-none">إدارة وجرد المخزون</h1>
-          <p class="text-[11px] text-emerald-600 font-bold mt-1 flex items-center gap-1">
+          <h1 class="text-lg md:text-xl font-extrabold text-slate-800 leading-none"><span class="hdr-long">إدارة وجرد المخزون</span><span class="hdr-short">جرد المخزون</span></h1>
+          <p class="hdr-sub text-[11px] text-emerald-600 font-bold mt-1 flex items-center gap-1">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span id="totalLbl">شامل جميع المنتجات (255 صنف)</span>
           </p>
         </div>
@@ -358,11 +380,8 @@ table{border-collapse:collapse}
         <button onclick="openResetModal()" title="تصفير كل الكميات" class="w-10 h-10 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl flex items-center justify-center transition border border-red-200">
           <span class="text-lg">🗑</span>
         </button>
-        <button onclick="openAddModal()" class="hidden sm:flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold transition shadow-lg shadow-slate-900/20">
-          <span>+</span> إضافة منتج
-        </button>
-        <button onclick="openAddModal()" class="sm:hidden w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg">
-          <span class="text-lg">+</span>
+        <button onclick="openAddModal()" title="إضافة منتج" class="add-btn hidden sm:flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold transition shadow-lg shadow-slate-900/20">
+          <span>+</span> <span class="add-txt">إضافة منتج</span>
         </button>
       </div>
     </div>
@@ -396,6 +415,8 @@ table{border-collapse:collapse}
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5" id="productsContainer"></div>
   </main>
+
+  <button onclick="openAddModal()" class="fab" title="إضافة منتج">+</button>
 
   <!-- MODAL: ORDER QTY PROMPT -->
   <div id="promptModal" class="fixed inset-0 bg-slate-900/60 z-50 items-center justify-center p-4 hidden modal-enter">
@@ -537,6 +558,7 @@ table{border-collapse:collapse}
     const toInt = v => Math.max(0, parseInt(v, 10) || 0);
     const cleanCount = v => { if (v === '' || v == null) return ''; const n = parseInt(v, 10); return isNaN(n) ? '' : Math.max(0, n); };
     const latinDigits = s => str(s).replace(/[٠-٩]/g, d => d.charCodeAt(0) - 0x660).replace(/[۰-۹]/g, d => d.charCodeAt(0) - 0x6F0);
+    const normAr = s => latinDigits(s).toLowerCase().replace(/[ً-ٰٟـ]/g, '').replace(/[أإآٱ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه').replace(/ؤ/g, 'و').replace(/ئ/g, 'ي');
     const SAFE_ID = /^[A-Za-z0-9_-]{1,80}$/;
     const UNIT_KEY = { CTN: 'C', PKT: 'K', PCS: 'P' };
 
@@ -915,6 +937,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
 "تصفير جميع الكميات؟": "Reset all quantities?",
 "هل أنت متأكد أنك تريد مسح وتصفير جميع الأرقام المدخلة في الجرد؟ (سعات الباكيت وورقة الوردية المحفوظة لن تتأثر)": "Are you sure you want to clear all numbers entered in the count? (Pack sizes and saved shift sheets are not affected)",
 "مسح قائمة الطلب أيضاً": "Also clear the order list",
+"جرد المخزون": "Inventory",
 "نعم، صَفِّر": "Yes, reset",
 "إضافة منتج جديد": "Add New Product",
 "رقم المنتج (الكود) *": "Product code *",
@@ -1187,11 +1210,14 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       activeBtn.className = TAB_ON; renderProducts();
     }
 
+    // البحث: توحيد أشكال الحروف (أ/إ/آ ← ا، ة ← ه، ى ← ي) والأرقام العربية، ومطابقة كل كلمة على حدة
+    const HAY = new WeakMap();
+    const hay = p => { let h = HAY.get(p); if (h === undefined) { h = normAr(p.name_ar + ' ' + p.name_en + ' ' + p.code); HAY.set(p, h); } return h; };
     function renderProducts() {
-      const term = searchInp.value.toLowerCase().trim(); const unit = unitFlt.value;
+      const words = normAr(searchInp.value).split(/\s+/).filter(Boolean); const unit = unitFlt.value;
       const filtered = localProducts.filter(p => {
-        const mS = p.name_ar.toLowerCase().includes(term) || p.name_en.toLowerCase().includes(term) || p.code.includes(term);
-        return mS && (selectedCat === 'ALL' || p.category === selectedCat) && (unit === 'ALL' || p.unit_code === unit);
+        const h = hay(p);
+        return words.every(w => h.includes(w)) && (selectedCat === 'ALL' || p.category === selectedCat) && (unit === 'ALL' || p.unit_code === unit);
       });
       document.getElementById('resultsCount').innerText = filtered.length;
       document.getElementById('totalLbl').textContent = L(`شامل جميع المنتجات (${localProducts.length} صنف)`, `All products (${localProducts.length} items)`); container.innerHTML = '';
