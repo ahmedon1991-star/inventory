@@ -536,6 +536,7 @@ table{border-collapse:collapse}
     const esc = s => str(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     const toInt = v => Math.max(0, parseInt(v, 10) || 0);
     const cleanCount = v => { if (v === '' || v == null) return ''; const n = parseInt(v, 10); return isNaN(n) ? '' : Math.max(0, n); };
+    const latinDigits = s => str(s).replace(/[٠-٩]/g, d => d.charCodeAt(0) - 0x660).replace(/[۰-۹]/g, d => d.charCodeAt(0) - 0x6F0);
     const SAFE_ID = /^[A-Za-z0-9_-]{1,80}$/;
     const UNIT_KEY = { CTN: 'C', PKT: 'K', PCS: 'P' };
 
@@ -1132,8 +1133,10 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       saveData(); syncSheetFromProduct(prod); renderProducts();
     }
     function handleDirectInput(id, field, el) {
-      const prod = localProducts.find(p => p.id === id);
-      if(prod) { const raw = el.value.trim(); prod[field] = raw === '' ? '' : parseInt(raw, 10) || 0; saveData(); updateCardTotal(prod); syncSheetFromProduct(prod); }
+      const prod = localProducts.find(p => p.id === id); if(!prod) return;
+      const raw = el.value.trim(), v = raw === '' ? '' : toInt(raw);
+      if (raw !== '' && String(v) !== raw) el.value = v; // لا أعداد سالبة ولا كسور: ‎-5 تصبح 0 و 2.5 تصبح 2
+      prod[field] = v; saveData(); updateCardTotal(prod); syncSheetFromProduct(prod);
     }
     function stepField(id, field, change) {
       const prod = localProducts.find(p => p.id === id);
@@ -1204,7 +1207,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
               <span class="text-xs font-bold text-slate-700 pr-1 flex items-center gap-1"><span class="text-blue-600 text-base">🏷</span> ${L('العدد المتوفر','Available')} (${esc(tr(p.unit_label))}):</span>
               <div class="flex items-center gap-1.5">
                 <button onclick="stepField('${p.id}', 'qty', -1)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 font-bold flex items-center justify-center text-sm active:scale-95 transition"><span>−</span></button>
-                <input type="number" inputmode="numeric" id="qty_${p.id}" value="${esc(p.qty)}" placeholder="0" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'qty', this)" class="card-input w-16 bg-white border border-slate-300 text-slate-900 text-lg">
+                <input type="number" inputmode="numeric" min="0" id="qty_${p.id}" value="${esc(p.qty)}" placeholder="0" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'qty', this)" class="card-input w-16 bg-white border border-slate-300 text-slate-900 text-lg">
                 <button onclick="stepField('${p.id}', 'qty', 1)" class="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center justify-center text-sm active:scale-95 transition shadow-sm"><span>+</span></button>
               </div>
             </div>
@@ -1219,19 +1222,19 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
               <span class="text-xs font-bold text-slate-700 pr-1 flex items-center gap-1"><span class="text-blue-600 text-sm">📦</span> عدد الباكيتات:</span>
               <div class="flex items-center gap-1">
                 <button onclick="stepField('${p.id}', 'packs', -1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-red-50 text-slate-600 font-bold flex items-center justify-center text-xs"><span>−</span></button>
-                <input type="number" inputmode="numeric" id="packs_${p.id}" value="${esc(p.packs)}" placeholder="0" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'packs', this)" class="card-input w-14 bg-white border border-slate-300 text-slate-900">
+                <input type="number" inputmode="numeric" min="0" id="packs_${p.id}" value="${esc(p.packs)}" placeholder="0" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'packs', this)" class="card-input w-14 bg-white border border-slate-300 text-slate-900">
                 <button onclick="stepField('${p.id}', 'packs', 1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-600 font-bold flex items-center justify-center text-xs"><span>+</span></button>
               </div>
             </div>
             <div class="flex items-center justify-between bg-amber-50/90 border border-amber-300/80 rounded-xl p-1.5 shadow-sm">
               <span class="text-xs font-bold text-amber-900 pr-1 flex items-center gap-1"><span class="text-amber-600 text-sm">▦</span> حبات في الباكيت:</span>
-              <div class="flex items-center pl-0.5"><input type="number" inputmode="numeric" id="pack_size_${p.id}" value="${esc(p.pack_size)}" placeholder="اكتب السعة" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'pack_size', this)" class="card-input w-24 bg-white border border-amber-300 text-amber-900"></div>
+              <div class="flex items-center pl-0.5"><input type="number" inputmode="numeric" min="0" id="pack_size_${p.id}" value="${esc(p.pack_size)}" placeholder="اكتب السعة" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'pack_size', this)" class="card-input w-24 bg-white border border-amber-300 text-amber-900"></div>
             </div>
             <div class="flex items-center justify-between bg-white/80 border border-black/10 rounded-xl p-1.5 shadow-sm">
               <span class="text-xs font-bold text-slate-700 pr-1 flex items-center gap-1"><span class="text-emerald-600 text-sm">📚</span> حبات مفرطة:</span>
               <div class="flex items-center gap-1">
                 <button onclick="stepField('${p.id}', 'loose', -1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-red-50 text-slate-600 font-bold flex items-center justify-center text-xs"><span>−</span></button>
-                <input type="number" inputmode="numeric" id="loose_${p.id}" value="${esc(p.loose)}" placeholder="0" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'loose', this)" class="card-input w-14 bg-white border border-slate-300 text-slate-900">
+                <input type="number" inputmode="numeric" min="0" id="loose_${p.id}" value="${esc(p.loose)}" placeholder="0" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'loose', this)" class="card-input w-14 bg-white border border-slate-300 text-slate-900">
                 <button onclick="stepField('${p.id}', 'loose', 1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-600 font-bold flex items-center justify-center text-xs"><span>+</span></button>
               </div>
             </div>
@@ -1445,7 +1448,8 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       const s = st(); const lk = (cur === db.active) ? ssLinkedCol(s) : null;
       const o = s.openConfirmed ? L('🔒 مؤكد','🔒 confirmed') : (s.open ? L('📝 مسحوب','📝 pulled') : '⏳');
       const c = s.closeConfirmed ? L('🔒 مؤكد','🔒 confirmed') : (s.close ? L('📝 مسحوب','📝 pulled') : '⏳');
-      $('ssStatus').textContent = L(`الاستلام: ${o}  |  التسليم: ${c}`, `Receive: ${o}  |  Handover: ${c}`) +
+      const day = (s.hdr.date && s.hdr.date !== todayStr()) ? L(`📅 ورقة ${s.hdr.date} (ليست اليوم)  |  `, `📅 Sheet ${s.hdr.date} (not today)  |  `) : '';
+      $('ssStatus').textContent = day + L(`الاستلام: ${o}  |  التسليم: ${c}`, `Receive: ${o}  |  Handover: ${c}`) +
         (s.saved ? L('  |  💾 محفوظة','  |  💾 Saved') : '') +
         (lk ? L(`  🔗 مربوط: ${lk==='o'?'الاستلام':'التسليم'}`, `  🔗 Linked: ${lk==='o'?'Receive':'Handover'}`) : '');
       const pull = $('ssPullBtn'), cf = $('ssConfirmBtn');
@@ -1488,20 +1492,28 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
         s.closeConfirmed = true;
       } else {
         if (!confirm(L('حفظ نهائي؟ بعد الحفظ لن يمكن تعديل الورقة وستنتقل إلى الأيام المحفوظة.', 'Final save? The sheet cannot be edited afterwards and will move to Saved days.'))) return;
-        s.saved = true; db.active = null;
+        s.saved = true; if (db.active === cur) db.active = null;
       }
       ssSave(); ssRenderHead(); ssRenderRows(); ssStatus(); ssRenderArch();
       if (s.saved) { $('ssArch').style.display = 'block'; alert(L('تم حفظ الورقة ✅ وهي الآن في الأيام المحفوظة.', 'Sheet saved ✅ It is now in Saved days.')); }
     }
+    const dayDiff = d => Math.round((new Date(todayStr()) - new Date(d)) / 864e5); // أيام بين تاريخ الورقة واليوم
     function ssOpen() {
-      ssSwitch(todayStr(), db.lastShift || 'Morning'); ssRefresh();
+      // الوردية الجارية (لم يُؤكَّد تسليمها) تُفتح تلقائياً إن بدأت اليوم أو أمس (وردية تمتد بعد منتصف الليل).
+      // الأقدم من ذلك تُعتبر متروكة: يُفك ربطها حتى لا تتغير في الخلفية، وتبقى في الأيام المحفوظة لمن أراد فتحها.
+      const a = db.active && db.sheets[db.active];
+      if (a && !a.saved && !a.closeConfirmed && dayDiff(a.hdr.date) <= 1) { cur = db.active; db.lastShift = a.hdr.shift; ssSave(); }
+      else { if (a && !a.saved && !(dayDiff(a.hdr.date) <= 1)) db.active = null; ssSwitch(todayStr(), db.lastShift || 'Morning'); }
+      ssRefresh();
       $('ssModal').style.display = 'flex'; document.body.style.overflow = 'hidden';
     }
     function ssClose() { $('ssModal').style.display = 'none'; document.body.style.overflow = 'auto'; document.querySelectorAll('.pr-target').forEach(e => e.classList.remove('pr-target')); }
     function ssReset() {
       if (st().saved) { alert(L('الورقة محفوظة نهائياً ولا يمكن مسحها من هنا. احذفها من الأيام المحفوظة إن لزم.', 'This sheet is saved and cannot be cleared here. Delete it from Saved days if needed.')); return; }
       if (!confirm('مسح أعداد هذه الورقة فقط (هذا اليوم والوردية)؟ الأيام الأخرى والجرد لن يتأثروا.')) return;
-      const h = st().hdr; db.sheets[cur] = { hdr: h, rows: {}, open: false, close: false, openConfirmed: false, closeConfirmed: false, saved: false }; ssSave(); ssRefresh();
+      const h = st().hdr; db.sheets[cur] = { hdr: h, rows: {}, open: false, close: false, openConfirmed: false, closeConfirmed: false, saved: false };
+      if (db.active === cur) db.active = null;
+      ssSave(); ssRefresh();
     }
     function ssToggleArch() { const a = $('ssArch'); a.style.display = a.style.display === 'block' ? 'none' : 'block'; ssRenderArch(); }
     function ssRenderArch() {
@@ -1514,7 +1526,8 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
     function ssLoad(k) { const s = db.sheets[k]; if (!s) return; cur = k; db.lastShift = s.hdr.shift; ssSave(); ssRefresh(); $('ssArch').style.display = 'none'; }
     function ssDel(k) {
       if (!confirm('حذف هذا اليوم نهائياً؟')) return;
-      delete db.sheets[k]; if (cur === k) ssSwitch(todayStr(), db.lastShift || 'Morning'); ssSave(); ssRefresh();
+      delete db.sheets[k]; if (db.active === k) db.active = null;
+      if (cur === k) ssSwitch(todayStr(), db.lastShift || 'Morning'); ssSave(); ssRefresh();
     }
     function ssWhats() {
       const h = st().hdr; let t = `📋 Daily Shift Turnover - Warehouse Items\n${h.date||''} | ${h.shift||''} | Shift#${h.shiftNo||'-'} | Count#${h.stockNo||'-'}\n${h.empName||''}\n\n` + L('الصنف | استلام | +وارد | -صادر | تسليم', 'Item | Receive | +In | -Out | Handover') + '\n';
@@ -1563,16 +1576,25 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
     document.addEventListener('input', e => {
       const t = e.target; if (!t.dataset || !cur) return;
       if (t.dataset.k) {
-        if (ssLocked(st(), t.dataset.f)) return;
-        const o = st().rows[t.dataset.k] = st().rows[t.dataset.k] || {}; o[t.dataset.f] = t.value; ssSave();
-        if ((t.dataset.f === 'o' || t.dataset.f === 'c') && cur === db.active && t.dataset.f === ssLinkedCol(st()) && SS_CODEOF[t.dataset.k]) {
-          const prod = localProducts.find(x => x.code === SS_CODEOF[t.dataset.k]); if (prod) { o['u' + t.dataset.f] = sheetUnit(SS_ROW[t.dataset.k], prod); ssSave(); applyCountToProduct(prod, t.value); }
-        }
+        const S = st(), f = t.dataset.f, k = t.dataset.k; if (ssLocked(S, f)) return;
+        const o = S.rows[k] = S.rows[k] || {};
+        const prod = ((f === 'o' || f === 'c') && cur === db.active && f === ssLinkedCol(S) && SS_CODEOF[k]) ? localProducts.find(x => x.code === SS_CODEOF[k]) : null;
+        if (prod) {
+          // العمود المربوط يقبل عدداً صحيحاً فقط. أي إدخال آخر (حرف، فاصلة، سالب) لا يغيّر رصيد المنتج:
+          // تتلون الخانة بالأحمر وتعود لقيمتها الصحيحة عند الخروج منها، بدل تصفير الرصيد أو تضخيمه (12.5 ← 125)
+          const v = latinDigits(t.value).trim();
+          if (v !== '' && !/^\d+$/.test(v)) { t.dataset.bad = '1'; t.style.background = '#fee2e2'; return; }
+          delete t.dataset.bad; t.style.background = ''; if (v !== t.value) t.value = v;
+          o[f] = v; o['u' + f] = sheetUnit(SS_ROW[k], prod); ssSave(); applyCountToProduct(prod, v);
+        } else { o[f] = t.value; ssSave(); }
       }
       else if (t.dataset.h && t.dataset.h !== 'date' && t.dataset.h !== 'shift') { if (st().saved) return; st().hdr[t.dataset.h] = t.value; ssSave(); }
     });
     document.addEventListener('change', e => {
-      const t = e.target; if (!t.dataset || t.dataset.h === undefined) return;
+      const t = e.target; if (!t.dataset) return;
+      // خانة مربوطة بقي فيها إدخال غير صالح: تعود لقيمتها المحفوظة (المطابقة لرصيد المنتج)
+      if (t.dataset.k && t.dataset.bad && cur) { const v = (st().rows[t.dataset.k] || {})[t.dataset.f]; t.value = v == null ? '' : v; delete t.dataset.bad; t.style.background = ''; return; }
+      if (t.dataset.h === undefined) return;
       if (t.dataset.h === 'date' || t.dataset.h === 'shift') {
         const h = st().hdr; const date = t.dataset.h === 'date' ? (t.value || h.date) : h.date; const shift = t.dataset.h === 'shift' ? t.value : h.shift;
         ssSwitch(date, shift); ssRefresh();
