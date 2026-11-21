@@ -1152,7 +1152,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
     function toggleMode(id) {
       const prod = localProducts.find(p => p.id === id); if(!prod) return;
       prod.mode = prod.mode === 'detailed' ? 'simple' : 'detailed';
-      if (prod.mode === 'detailed' && prod.pack_size === '') { const s = oraclePackSize(prod.code); if (s) prod.pack_size = s; }
+      if (prod.mode === 'detailed' && !(toInt(prod.pack_size) > 0)) { const s = oraclePackSize(prod.code); if (s) prod.pack_size = s; }
       saveData(); syncSheetFromProduct(prod); renderProducts();
     }
     function handleDirectInput(id, field, el) {
@@ -1398,6 +1398,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
     const rowUnit = (r, v, p) => { if (r[5]) return 'PCS'; const a = v.uo, b = v.uc; return (a && b && a !== b) ? a + '/' + b : (a || b || sheetUnit(r, p)); };
     const $ = id => document.getElementById(id);
     const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+    const dayDiff = d => Math.round((new Date(todayStr()) - new Date(d)) / 864e5); // أيام بين تاريخ الورقة واليوم
 
     let db = { sheets: {}, lastShift: 'Morning', active: null };
     (function(){ const s = loadJSON(SS_KEY); if (s === undefined) return; const n = normSheets(s); if (n) db = n; else { dataProblem = true; keepCorrupt(SS_KEY); } })();
@@ -1413,7 +1414,8 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       }
       cur = k; db.lastShift = shift; ssSave();
     }
-    function ssLinkedCol(s) { if (s.saved) return null; if (s.open && !s.openConfirmed) return 'o'; if (s.openConfirmed && s.close && !s.closeConfirmed) return 'c'; return null; }
+    // الربط المباشر (في الاتجاهين) فقط لورقة اليوم أو أمس (وردية تمتد بعد منتصف الليل)؛ ورقة أقدم لا تتغير في الخلفية ولا تغيّر الرصيد
+    function ssLinkedCol(s) { if (s.saved || !(dayDiff(s.hdr.date) <= 1)) return null; if (s.open && !s.openConfirmed) return 'o'; if (s.openConfirmed && s.close && !s.closeConfirmed) return 'c'; return null; }
     function ssLocked(s, f) { if (s.saved) return true; if (f === 'o') return !!s.openConfirmed; if (f === 'c') return !s.openConfirmed || !!s.closeConfirmed; return false; }
     // منتج -> ورقة (حي): العمود المربوط في الورقة النشطة يتبع رصيد المنتج
     function syncSheetFromProduct(prod) {
@@ -1500,8 +1502,8 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       if (col === 'o') s.open = true; else s.close = true;
       db.active = cur;
       ssSave(); ssRenderRows(); ssStatus(); ssRenderArch();
-      alert(L(`تم سحب ${ok} صنف في عمود ${col==='o'?'الاستلام (Opening)':'التسليم (Closing)'}.\nلم تُجرد بعد: ${empty}\nإدخال يدوي: ${manual}` + (noSize ? `\n⚠️ فيها باكيتات بدون سعة الباكيت (لم تُسحب): ${noSize}` : '') + `\nالعمود الآن مربوط مباشرة بصفحة المنتج.`,
-        `Pulled ${ok} items into the ${col==='o'?'Receive (Opening)':'Handover (Closing)'} column.\nNot counted yet: ${empty}\nManual: ${manual}` + (noSize ? `\n⚠️ Packets without a pack size (not pulled): ${noSize}` : '') + `\nThis column is now linked live to the product page.`));
+      alert(L(`تم سحب ${ok} صنف في عمود ${col==='o'?'الاستلام (Opening)':'التسليم (Closing)'}.\nلم تُجرد بعد: ${empty}\nإدخال يدوي: ${manual}` + (noSize ? `\n⚠️ فيها باكيتات بدون سعة الباكيت (لم تُسحب): ${noSize}` : '') + (ssLinkedCol(s) ? `\nالعمود الآن مربوط مباشرة بصفحة المنتج.` : `\n📅 ورقة يوم سابق: نُسخت الأعداد مرة واحدة بدون ربط مباشر.`),
+        `Pulled ${ok} items into the ${col==='o'?'Receive (Opening)':'Handover (Closing)'} column.\nNot counted yet: ${empty}\nManual: ${manual}` + (noSize ? `\n⚠️ Packets without a pack size (not pulled): ${noSize}` : '') + (ssLinkedCol(s) ? `\nThis column is now linked live to the product page.` : `\n📅 Sheet of an earlier day: counts copied once, not linked live.`)));
     }
     function ssConfirm() {
       const s = st(); if (s.saved) return;
@@ -1523,7 +1525,6 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       ssSave(); ssRenderHead(); ssRenderRows(); ssStatus(); ssRenderArch();
       if (s.saved) { $('ssArch').style.display = 'block'; alert(L('تم حفظ الورقة ✅ وهي الآن في الأيام المحفوظة.', 'Sheet saved ✅ It is now in Saved days.')); }
     }
-    const dayDiff = d => Math.round((new Date(todayStr()) - new Date(d)) / 864e5); // أيام بين تاريخ الورقة واليوم
     function ssOpen() {
       // الوردية الجارية (لم يُؤكَّد تسليمها) تُفتح تلقائياً إن بدأت اليوم أو أمس (وردية تمتد بعد منتصف الليل).
       // الأقدم من ذلك تُعتبر متروكة: يُفك ربطها حتى لا تتغير في الخلفية، وتبقى في الأيام المحفوظة لمن أراد فتحها.
@@ -1941,7 +1942,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
     function prefillPackSizes() {
       let ch = false;
       // بعد تعبئة السعة نحدّث الورقة المربوطة أيضاً، حتى لا يبقى فيها رقم ناقص سُحب قبل التحديث
-      localProducts.forEach(p => { if (p.mode === 'detailed' && p.pack_size === '') { const s = oraclePackSize(p.code); if (s) { p.pack_size = s; ch = true; syncSheetFromProduct(p); } } });
+      localProducts.forEach(p => { if (p.mode === 'detailed' && !(toInt(p.pack_size) > 0)) { const s = oraclePackSize(p.code); if (s) { p.pack_size = s; ch = true; syncSheetFromProduct(p); } } });
       if (ch) saveData();
     }
     let mnDB = { list: [] }; (function(){ const x = loadJSON(MN_KEY); if (x === undefined) return; const n = normMonthly(x); if (n) mnDB = n; else { dataProblem = true; keepCorrupt(MN_KEY); } })();
