@@ -529,6 +529,60 @@ table{border-collapse:collapse}
     /* ===== بيانات المنتجات (كود|عربي|إنجليزي|تصنيف|وحدة|تفصيلي) ===== */
     const CATS = ["أكواب ساخنة","الأكواب الباردة","أغطية الأكواب","أغلفة وحوامل الأكواب","الصناديق والعلب","أكياس التعبئة والتسوق","قهوة وكبسولات","الشرابات والصلصات والبودرة","شاي ومشروبات","أجبان وألبان","مياه وعصائر","السكر والمحليات","مخبوزات وساندوتشات","كيك وكوكيز ومافن","دونات فانسى ومميز","مونشكين ودونات عادي","وجبات خفيفة ومكسرات","دواجن ولحوم","أكواب وتملبرات مبيعات","مستلزمات ونظافة","المنظفات والمعقمات","قرطاسية وملصقات","زي الموظفين (Uniform)"];
     const UN = {C:['CTN - كرتون','CTN','كرتون (CTN)'], K:['PKT - باكيت','PKT','باكيت (PKT)'], P:['PCS - حبة','PCS','حبة (PCS)']};
+
+    /* ===== أدوات عامة: تهريب HTML والتحقق من البيانات المحفوظة والمسترجعة ===== */
+    const str = v => v == null ? '' : String(v);
+    const esc = s => str(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    const cleanCount = v => { if (v === '' || v == null) return ''; const n = parseInt(v, 10); return isNaN(n) ? '' : Math.max(0, n); };
+    const SAFE_ID = /^[A-Za-z0-9_-]{1,80}$/;
+    const UNIT_KEY = { CTN: 'C', PKT: 'K', PCS: 'P' };
+
+    // تُستخدم عند التشغيل وعند الاسترجاع: أي بيانات غير سليمة تُصحَّح أو تُستبعد بدل أن توقف التطبيق أو تُدخل كوداً فيه
+    function normProducts(list) {
+      if (!Array.isArray(list)) return null;
+      const seen = new Set(); let n = 0;
+      return list.filter(x => x && typeof x === 'object' && str(x.code).trim() !== '').map(x => {
+        const uc = UNIT_KEY[x.unit_code] ? x.unit_code : (/CTN/.test(str(x.unit)) ? 'CTN' : /PKT/.test(str(x.unit)) ? 'PKT' : 'PCS');
+        const u = UN[UNIT_KEY[uc]];
+        let id = SAFE_ID.test(str(x.id)) ? str(x.id) : '';
+        while (!id || seen.has(id)) id = 'prod_fix_' + (++n);
+        seen.add(id);
+        return { id, code: str(x.code).trim(), name_ar: str(x.name_ar), name_en: str(x.name_en), category: str(x.category), mode: x.mode === 'detailed' ? 'detailed' : 'simple',
+          qty: cleanCount(x.qty), packs: cleanCount(x.packs), pack_size: cleanCount(x.pack_size), loose: cleanCount(x.loose), unit: u[0], unit_code: u[1], unit_label: u[2] };
+      });
+    }
+    function normOrders(o) {
+      const r = {}; if (!o || typeof o !== 'object' || Array.isArray(o)) return r;
+      Object.keys(o).forEach(k => { const n = parseInt(o[k], 10); if (SAFE_ID.test(k) && n > 0) r[k] = n; });
+      return r;
+    }
+    function normSheets(d) {
+      if (!d || typeof d !== 'object' || !d.sheets || typeof d.sheets !== 'object' || Array.isArray(d.sheets)) return null;
+      const out = { sheets: {}, lastShift: d.lastShift === 'Evening' ? 'Evening' : 'Morning', active: null };
+      Object.keys(d.sheets).forEach(k => {
+        const s = d.sheets[k]; if (!s || typeof s !== 'object' || !s.hdr || typeof s.hdr !== 'object') return;
+        const h = s.hdr, rows = {};
+        if (s.rows && typeof s.rows === 'object') Object.keys(s.rows).forEach(rk => {
+          const r = s.rows[rk]; if (!r || typeof r !== 'object') return;
+          const o = {}; ['o', 'i', 't', 'c', 'code', 'name'].forEach(f => { if (r[f] != null) o[f] = str(r[f]); }); rows[rk] = o;
+        });
+        const old = s.saved === undefined; // ورقة من نسخة أقدم بدون حالة الحفظ
+        out.sheets[k] = { hdr: { date: str(h.date), shift: str(h.shift), shiftNo: str(h.shiftNo), stockNo: str(h.stockNo), empId: str(h.empId), empName: str(h.empName) }, rows,
+          open: !!s.open, close: !!s.close, openConfirmed: old ? !!s.close : !!s.openConfirmed, closeConfirmed: old ? false : !!s.closeConfirmed, saved: !!s.saved };
+      });
+      if (typeof d.active === 'string' && out.sheets[d.active]) out.active = d.active;
+      return out;
+    }
+    function normMonthly(x) {
+      if (!x || typeof x !== 'object' || !Array.isArray(x.list)) return null;
+      return { list: x.list.filter(s => s && typeof s === 'object' && s.hdr && typeof s.hdr === 'object' && s.rows && typeof s.rows === 'object').map((s, i) => {
+        const rows = {}; Object.keys(s.rows).forEach(k => { rows[k] = Array.isArray(s.rows[k]) ? s.rows[k].map(str) : []; });
+        return { id: (typeof s.id === 'number' || SAFE_ID.test(str(s.id))) ? s.id : Date.now() + i, hdr: { date: str(s.hdr.date), listNo: str(s.hdr.listNo), cost: str(s.hdr.cost) }, rows, savedAt: str(s.savedAt) };
+      }) };
+    }
+    function loadJSON(key) { let raw = null; try { raw = localStorage.getItem(key); } catch(e) {} if (raw == null) return undefined; try { return JSON.parse(raw); } catch(e) { return null; } }
+    // قبل استبدال بيانات تالفة نحتفظ بنصها الخام في مفتاح جانبي، فلا يضيع شيء نهائياً
+    function keepCorrupt(key) { try { const raw = localStorage.getItem(key); if (raw != null) localStorage.setItem(key + '_corrupt', raw); } catch(e) {} }
     const RAW = `15041002|مريلة زي موحد دانكن|UNIFORM.APRON DD|22|P|0
 10123003|ساندوتش بيغل قرفة دانكن (1 × 60 حبة)|SANDWICH.DD BAGEL CINNAMON (1X60 PCS)|12|C|0
 10123002|ساندوتش بيغل حبوب متعددة دانكن (1 × 60 حبة)|SANDWICH.DD BAGEL MULTIGRAIN (1X60 PCS)|12|P|0
@@ -975,7 +1029,9 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
 
     const catMeta = {"أكواب ساخنة":{bd:"#cbd5e1",bg:"#ffffff",icon:"☕"},"الأكواب الباردة":{bd:"#94a3b8",bg:"#f1f5f9",icon:"🩶"},"أغطية الأكواب":{bd:"#93c5fd",bg:"#eff6ff",icon:"🟦"},"أغلفة وحوامل الأكواب":{bd:"#d6b98a",bg:"#fffbeb",icon:"🟫"},"الصناديق والعلب":{bd:"#fdba74",bg:"#fff7ed",icon:"📦"},"أكياس التعبئة والتسوق":{bd:"#d6d3d1",bg:"#f5f5f4",icon:"🛍️"},"قهوة وكبسولات":{bd:"#6ee7b7",bg:"#ecfdf5",icon:"🟢"},"الشرابات والصلصات والبودرة":{bd:"#d8b4fe",bg:"#faf5ff",icon:"🟣"},"شاي ومشروبات":{bd:"#5eead4",bg:"#f0fdfa",icon:"🍵"},"أجبان وألبان":{bd:"#fde047",bg:"#fefce8",icon:"🥛"},"مياه وعصائر":{bd:"#67e8f9",bg:"#ecfeff",icon:"💧"},"السكر والمحليات":{bd:"#fda4af",bg:"#fff1f2",icon:"🍬"},"مخبوزات وساندوتشات":{bd:"#fcd34d",bg:"#fffbeb",icon:"🥐"},"كيك وكوكيز ومافن":{bd:"#facc15",bg:"#fefce8",icon:"🧁"},"دونات فانسى ومميز":{bd:"#f9a8d4",bg:"#fdf2f8",icon:"🍩"},"مونشكين ودونات عادي":{bd:"#fdba74",bg:"#fff7ed",icon:"🍩"},"وجبات خفيفة ومكسرات":{bd:"#bef264",bg:"#f7fee7",icon:"🥜"},"دواجن ولحوم":{bd:"#fca5a5",bg:"#fef2f2",icon:"🥩"},"أكواب وتملبرات مبيعات":{bd:"#a5b4fc",bg:"#eef2ff",icon:"🥤"},"مستلزمات ونظافة":{bd:"#cbd5e1",bg:"#f1f5f9",icon:"🥢"},"المنظفات والمعقمات":{bd:"#facc15",bg:"#fef9c3",icon:"🟡"},"قرطاسية وملصقات":{bd:"#d8b4fe",bg:"#faf5ff",icon:"🏷️"},"زي الموظفين (Uniform)":{bd:"#64748b",bg:"#e2e8f0",icon:"👕"}};
 
-    let localProducts = (function(){try{return JSON.parse(localStorage.getItem('inventory_all_255_v1'))||initProducts;}catch(e){return initProducts;}})();
+    const INV_KEY = 'inventory_all_255_v1';
+    let dataProblem = false; // بيانات محفوظة تالفة: نُحمّل الافتراضي وننبّه المستخدم بدل أن يتوقف التطبيق كلياً
+    let localProducts = (function(){ const s = loadJSON(INV_KEY); if (s === undefined) return initProducts; const n = normProducts(s); if (n && n.length) return n; dataProblem = true; keepCorrupt(INV_KEY); return initProducts; })();
     // ترحيل الأكواد القديمة إلى أكواد Oracle (بدون فقد الكميات)
     (function(){
       const RN = { 'DD-OPR-TUM-GYM-00001': ['12051005','GYM SILICON R BLACK 600ML','مطارة ماء رياضية سيليكون سوداء 600 مل'], 'TUM-000038': ['12051045','TUMBLER.DD STAINLESS MUG ( BLACK AND WHITE)','ماج دانكن ستانلس (أسود وأبيض)'],
@@ -991,10 +1047,10 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
     (function(){
       let added = false;
       initProducts.forEach(p => { if (!localProducts.some(x => x.code === p.code)) { localProducts.push(p); added = true; } });
-      if (added) { try { localStorage.setItem('inventory_all_255_v1', JSON.stringify(localProducts)); } catch(e) {} }
+      if (added || dataProblem) { try { localStorage.setItem(INV_KEY, JSON.stringify(localProducts)); } catch(e) {} }
     })();
     let selectedCat = 'ALL';
-    let orderQuantities = (function(){try{return JSON.parse(localStorage.getItem('order_qtys_v1'))||{};}catch(e){return {};}})();
+    let orderQuantities = normOrders(loadJSON('order_qtys_v1'));
     let promptTargetId = null;
 
     const container = document.getElementById('productsContainer');
@@ -1009,8 +1065,10 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e) {}
       new MutationObserver(ms => { if (LANG !== 'en') return; ms.forEach(m => m.addedNodes.forEach(trTree)); }).observe(document.documentElement, { childList: true, subtree: true });
       if (LANG === 'en') setLang('en'); else document.getElementById('langBtn').textContent = 'EN';
+      if (dataProblem) setTimeout(() => alert(L('بعض البيانات المحفوظة كانت تالفة ولم يمكن قراءتها، فتم تجاهلها وتحميل القيم الافتراضية. إن كانت لديك نسخة احتياطية سليمة فاسترجعها من ورقة الوردية.',
+        'Some saved data was damaged and could not be read, so it was ignored and defaults were loaded. If you have a good backup, restore it from the Shift Sheet.')), 300);
     }
-    function saveData() { try { localStorage.setItem('inventory_all_255_v1', JSON.stringify(localProducts)); } catch(e) {} }
+    function saveData() { try { localStorage.setItem(INV_KEY, JSON.stringify(localProducts)); } catch(e) {} }
     function saveOrderQtys() { try { localStorage.setItem('order_qtys_v1', JSON.stringify(orderQuantities)); } catch(e) {} }
 
     function openPromptModal(id) {
@@ -1043,7 +1101,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
         const p = localProducts.find(prod => prod.id === id); if(!p) return;
         const d = document.createElement('div');
         d.className = 'flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl p-3 mb-2.5';
-        d.innerHTML = `<div class="flex-1 pr-2"><div class="flex items-center gap-2 mb-1"><span class="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">#${p.code}</span><span class="text-xs font-bold text-slate-500">${p.unit_label}</span></div><h5 class="text-sm font-extrabold text-slate-800">${pn(p)}</h5><p class="text-[11px] font-sans text-slate-400" dir="${LANG==='en'?'rtl':'ltr'}">${ps(p)}</p></div>
+        d.innerHTML = `<div class="flex-1 pr-2"><div class="flex items-center gap-2 mb-1"><span class="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">#${esc(p.code)}</span><span class="text-xs font-bold text-slate-500">${esc(p.unit_label)}</span></div><h5 class="text-sm font-extrabold text-slate-800">${esc(pn(p))}</h5><p class="text-[11px] font-sans text-slate-400" dir="${LANG==='en'?'rtl':'ltr'}">${esc(ps(p))}</p></div>
           <div class="flex items-center gap-2"><div class="bg-amber-100 text-amber-950 font-black px-3 py-1.5 rounded-xl text-sm font-sans">${L('الطلب','Order')}: ${orderQuantities[id]}</div><button onclick="deleteFromOrder('${p.id}'); openOrderModal();" class="text-red-500 hover:bg-red-50 p-2 rounded-xl transition"><span class="text-base">🗑</span></button></div>`;
         lc.appendChild(d);
       });
@@ -1080,7 +1138,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
     function updateCardTotal(prod) {
       if(prod.mode === 'simple') {
         const qtyVal = parseInt(prod.qty, 10) || 0; const el = document.getElementById(`total_${prod.id}`);
-        if(el) el.innerHTML = `${qtyVal.toLocaleString(LOC())} <span class="text-[10px] text-white font-normal">${prod.unit_label}</span>`;
+        if(el) el.innerHTML = `${qtyVal.toLocaleString(LOC())} <span class="text-[10px] text-white font-normal">${esc(prod.unit_label)}</span>`;
       } else {
         const packs = parseInt(prod.packs, 10) || 0, packSize = parseInt(prod.pack_size, 10) || 0, loose = parseInt(prod.loose, 10) || 0;
         let total = 0, formulaText = '';
@@ -1104,7 +1162,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       cats.forEach(cat => {
         const count = localProducts.filter(p => p.category === cat).length;
         const btn = document.createElement('button'); btn.className = TAB_OFF; btn.dataset.cat = cat;
-        btn.innerHTML = `${getMeta(cat).icon} ${tc(cat)} <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md ml-1 text-[11px] border border-slate-200">${count}</span>`;
+        btn.innerHTML = `${getMeta(cat).icon} ${esc(tc(cat))} <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md ml-1 text-[11px] border border-slate-200">${count}</span>`;
         btn.onclick = () => filterByCategory(cat, btn); tabsContainer.appendChild(btn);
       });
       Array.from(tabsContainer.children).forEach(b => { b.className = ((b.dataset.cat || 'ALL') === selectedCat) ? TAB_ON : TAB_OFF; });
@@ -1132,16 +1190,16 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
           const qtyVal = parseInt(p.qty, 10) || 0;
           inputsHtml = `
             <div class="flex items-center justify-between bg-white/80 border border-black/10 rounded-xl p-2 shadow-sm">
-              <span class="text-xs font-bold text-slate-700 pr-1 flex items-center gap-1"><span class="text-blue-600 text-base">🏷</span> ${L('العدد المتوفر','Available')} (${tr(p.unit_label)}):</span>
+              <span class="text-xs font-bold text-slate-700 pr-1 flex items-center gap-1"><span class="text-blue-600 text-base">🏷</span> ${L('العدد المتوفر','Available')} (${esc(tr(p.unit_label))}):</span>
               <div class="flex items-center gap-1.5">
                 <button onclick="stepField('${p.id}', 'qty', -1)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 font-bold flex items-center justify-center text-sm active:scale-95 transition"><span>−</span></button>
-                <input type="number" inputmode="numeric" id="qty_${p.id}" value="${p.qty !== undefined ? p.qty : ''}" placeholder="0" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'qty', this)" class="card-input w-16 bg-white border border-slate-300 text-slate-900 text-lg">
+                <input type="number" inputmode="numeric" id="qty_${p.id}" value="${esc(p.qty)}" placeholder="0" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'qty', this)" class="card-input w-16 bg-white border border-slate-300 text-slate-900 text-lg">
                 <button onclick="stepField('${p.id}', 'qty', 1)" class="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center justify-center text-sm active:scale-95 transition shadow-sm"><span>+</span></button>
               </div>
             </div>
             <div class="bg-slate-900 text-white p-2.5 rounded-xl shadow-md flex items-center justify-between">
               <div><span class="text-[10px] font-bold text-slate-400 block leading-none">الرصيد الكلي</span><span class="text-[10px] text-emerald-400 font-bold">جرد مباشر</span></div>
-              <span class="text-base font-black font-sans text-amber-300" id="total_${p.id}">${qtyVal.toLocaleString(LOC())} <span class="text-[10px] text-white font-normal">${p.unit_label}</span></span>
+              <span class="text-base font-black font-sans text-amber-300" id="total_${p.id}">${qtyVal.toLocaleString(LOC())} <span class="text-[10px] text-white font-normal">${esc(p.unit_label)}</span></span>
             </div>`;
         } else {
           const packs = parseInt(p.packs, 10) || 0, packSize = parseInt(p.pack_size, 10) || 0, loose = parseInt(p.loose, 10) || 0;
@@ -1154,19 +1212,19 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
               <span class="text-xs font-bold text-slate-700 pr-1 flex items-center gap-1"><span class="text-blue-600 text-sm">📦</span> عدد الباكيتات:</span>
               <div class="flex items-center gap-1">
                 <button onclick="stepField('${p.id}', 'packs', -1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-red-50 text-slate-600 font-bold flex items-center justify-center text-xs"><span>−</span></button>
-                <input type="number" inputmode="numeric" id="packs_${p.id}" value="${p.packs !== undefined ? p.packs : ''}" placeholder="0" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'packs', this)" class="card-input w-14 bg-white border border-slate-300 text-slate-900">
+                <input type="number" inputmode="numeric" id="packs_${p.id}" value="${esc(p.packs)}" placeholder="0" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'packs', this)" class="card-input w-14 bg-white border border-slate-300 text-slate-900">
                 <button onclick="stepField('${p.id}', 'packs', 1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-600 font-bold flex items-center justify-center text-xs"><span>+</span></button>
               </div>
             </div>
             <div class="flex items-center justify-between bg-amber-50/90 border border-amber-300/80 rounded-xl p-1.5 shadow-sm">
               <span class="text-xs font-bold text-amber-900 pr-1 flex items-center gap-1"><span class="text-amber-600 text-sm">▦</span> حبات في الباكيت:</span>
-              <div class="flex items-center pl-0.5"><input type="number" inputmode="numeric" id="pack_size_${p.id}" value="${p.pack_size !== undefined ? p.pack_size : ''}" placeholder="اكتب السعة" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'pack_size', this)" class="card-input w-24 bg-white border border-amber-300 text-amber-900"></div>
+              <div class="flex items-center pl-0.5"><input type="number" inputmode="numeric" id="pack_size_${p.id}" value="${esc(p.pack_size)}" placeholder="اكتب السعة" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'pack_size', this)" class="card-input w-24 bg-white border border-amber-300 text-amber-900"></div>
             </div>
             <div class="flex items-center justify-between bg-white/80 border border-black/10 rounded-xl p-1.5 shadow-sm">
               <span class="text-xs font-bold text-slate-700 pr-1 flex items-center gap-1"><span class="text-emerald-600 text-sm">📚</span> حبات مفرطة:</span>
               <div class="flex items-center gap-1">
                 <button onclick="stepField('${p.id}', 'loose', -1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-red-50 text-slate-600 font-bold flex items-center justify-center text-xs"><span>−</span></button>
-                <input type="number" inputmode="numeric" id="loose_${p.id}" value="${p.loose !== undefined ? p.loose : ''}" placeholder="0" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'loose', this)" class="card-input w-14 bg-white border border-slate-300 text-slate-900">
+                <input type="number" inputmode="numeric" id="loose_${p.id}" value="${esc(p.loose)}" placeholder="0" onfocus="this.select()" oninput="handleDirectInput('${p.id}', 'loose', this)" class="card-input w-14 bg-white border border-slate-300 text-slate-900">
                 <button onclick="stepField('${p.id}', 'loose', 1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-600 font-bold flex items-center justify-center text-xs"><span>+</span></button>
               </div>
             </div>
@@ -1181,15 +1239,15 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
         card.innerHTML = `
           <div>
             <div class="flex items-start justify-between mb-2">
-              <div class="flex items-center gap-1.5 cursor-pointer" onclick="copyCode('${p.code}')"><span class="text-xs font-mono font-black bg-white/90 border border-black/10 px-2 py-0.5 rounded-md text-slate-800 shadow-sm">#${p.code}</span></div>
+              <div class="flex items-center gap-1.5 cursor-pointer" data-code="${esc(p.code)}" onclick="copyCode(this.dataset.code)"><span class="text-xs font-mono font-black bg-white/90 border border-black/10 px-2 py-0.5 rounded-md text-slate-800 shadow-sm">#${esc(p.code)}</span></div>
               <div class="flex items-center gap-1">
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md unit-badge-${p.unit_code} shadow-sm">${p.unit_label}</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md unit-badge-${p.unit_code} shadow-sm">${esc(p.unit_label)}</span>
                 <button onclick="toggleMode('${p.id}')" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md border border-black/10 bg-white/90 text-slate-600 flex items-center gap-0.5 shadow-sm"><span class="text-blue-600">🔄</span> ${isDetailed ? 'تفصيلي' : 'بسيط'}</button>
                 <button onclick="openPromptModal('${p.id}')" class="text-xs px-2.5 py-1 rounded-md border transition ${hasOrder ? 'bg-blue-600 text-white border-blue-600 shadow-sm font-bold' : 'bg-white/90 text-slate-600 border-black/10'}"><span class="text-sm">🛒</span> ${hasOrder ? orderQuantities[p.id] : 'طلب'}</button>
               </div>
             </div>
-            <h4 class="text-[14px] font-extrabold mb-0.5 leading-snug text-slate-900">${pn(p)}</h4>
-            <p class="text-[11px] font-sans font-semibold opacity-70 leading-tight line-clamp-1 mb-3" dir="${LANG==='en'?'rtl':'ltr'}">${ps(p)}</p>
+            <h4 class="text-[14px] font-extrabold mb-0.5 leading-snug text-slate-900">${esc(pn(p))}</h4>
+            <p class="text-[11px] font-sans font-semibold opacity-70 leading-tight line-clamp-1 mb-3" dir="${LANG==='en'?'rtl':'ltr'}">${esc(ps(p))}</p>
           </div>
           <div class="mt-auto space-y-2 pt-2 border-t border-black/5">${inputsHtml}</div>`;
         container.appendChild(card);
@@ -1291,12 +1349,10 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
     const SS_BYCODE = {}, SS_CODEOF = {};
     SS_ROWS.forEach(r => { if (!r[5]) { SS_BYCODE[r[3] || r[1]] = r[1]; SS_CODEOF[r[1]] = r[3] || r[1]; } });
     const $ = id => document.getElementById(id);
-    const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
     const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
 
-    let db = { sheets: {}, lastShift: 'Morning' };
-    try { const s = JSON.parse(localStorage.getItem(SS_KEY)); if (s && s.sheets) db = s; } catch(e) {}
-    Object.values(db.sheets).forEach(x => { if (x.saved === undefined) { x.saved = false; x.openConfirmed = !!x.close; x.closeConfirmed = false; } });
+    let db = { sheets: {}, lastShift: 'Morning', active: null };
+    (function(){ const s = loadJSON(SS_KEY); if (s === undefined) return; const n = normSheets(s); if (n) db = n; else { dataProblem = true; keepCorrupt(SS_KEY); } })();
     let cur = null;
     const ssSave = () => { try { localStorage.setItem(SS_KEY, JSON.stringify(db)); } catch(e) {} };
     const st = () => db.sheets[cur];
@@ -1431,7 +1487,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       const keys = Object.keys(db.sheets).filter(k => hasData(db.sheets[k])).sort().reverse();
       $('ssArch').innerHTML = `<div style="font-weight:900;margin-bottom:6px">${L('الأيام المحفوظة','Saved days')} (${keys.length})</div>` +
         (keys.length ? keys.map(k => { const s = db.sheets[k];
-          return `<div class="it"><span>${esc(s.hdr.date)} • ${esc(s.hdr.shift)} &nbsp; ${s.saved ? L('💾 محفوظة','💾 Saved') : L('⏳ قيد العمل','⏳ In progress')} &nbsp; ${L('استلام','Receive')}${s.openConfirmed?'🔒':(s.open?'📝':'⏳')} ${L('تسليم','Handover')}${s.closeConfirmed?'🔒':(s.close?'📝':'⏳')}</span><button class="ss-btn ss-main" onclick="ssLoad('${k}')">فتح</button><button class="ss-btn ss-red" onclick="ssDel('${k}')">حذف</button></div>`; }).join('')
+          return `<div class="it"><span>${esc(s.hdr.date)} • ${esc(s.hdr.shift)} &nbsp; ${s.saved ? L('💾 محفوظة','💾 Saved') : L('⏳ قيد العمل','⏳ In progress')} &nbsp; ${L('استلام','Receive')}${s.openConfirmed?'🔒':(s.open?'📝':'⏳')} ${L('تسليم','Handover')}${s.closeConfirmed?'🔒':(s.close?'📝':'⏳')}</span><button class="ss-btn ss-main" data-sk="${esc(k)}" onclick="ssLoad(this.dataset.sk)">فتح</button><button class="ss-btn ss-red" data-sk="${esc(k)}" onclick="ssDel(this.dataset.sk)">حذف</button></div>`; }).join('')
           : '<div style="color:#64748b;font-size:12px">لا توجد أيام محفوظة بعد.</div>');
     }
     function ssLoad(k) { const s = db.sheets[k]; if (!s) return; cur = k; db.lastShift = s.hdr.shift; ssSave(); ssRefresh(); $('ssArch').style.display = 'none'; }
@@ -1463,17 +1519,21 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       const f = inp.files && inp.files[0]; if (!f) return;
       const rd = new FileReader();
       rd.onload = () => {
-        try {
-          const d = JSON.parse(rd.result);
-          if (!d.inventory || !d.sheets) throw new Error('bad');
-          if (!confirm('سيتم استبدال كل البيانات الحالية بالنسخة المحفوظة. متابعة؟')) return;
-          localStorage.setItem('inventory_all_255_v1', JSON.stringify(d.inventory));
-          localStorage.setItem('order_qtys_v1', JSON.stringify(d.orders || {}));
-          localStorage.setItem(SS_KEY, JSON.stringify(d.sheets));
-          if (d.monthly && d.monthly.list) localStorage.setItem('monthly_counts_v1', JSON.stringify(d.monthly));
-          if (d.monthlyHdr) localStorage.setItem('monthly_hdr_v1', JSON.stringify(d.monthlyHdr));
-          location.reload();
-        } catch(e) { alert('الملف غير صالح.'); }
+        // تحقق كامل قبل الكتابة: ملف تالف أو معدّل لا يجب أن يوقف التطبيق أو يُدخل كوداً فيه
+        let d = null, inv = null, sheets = null, monthly = null;
+        try { d = JSON.parse(rd.result); inv = normProducts(d && d.inventory); sheets = normSheets(d && d.sheets); monthly = d && d.monthly ? normMonthly(d.monthly) : null; } catch(e) {}
+        if (!inv || !inv.length || !sheets || (d.monthly && !monthly)) { alert(L('الملف غير صالح أو تالف، ولم يتغير شيء.', 'The file is invalid or damaged. Nothing was changed.')); return; }
+        if (!confirm('سيتم استبدال كل البيانات الحالية بالنسخة المحفوظة. متابعة؟')) return;
+        const w = [[INV_KEY, inv], ['order_qtys_v1', normOrders(d.orders)], [SS_KEY, sheets]];
+        if (monthly) w.push([MN_KEY, monthly]);
+        if (d.monthlyHdr && typeof d.monthlyHdr === 'object') { const h = {}; ['listNo', 'cost', 'date'].forEach(k => { if (d.monthlyHdr[k] != null) h[k] = str(d.monthlyHdr[k]); }); w.push([MN_HDR_KEY, h]); }
+        const before = w.map(([k]) => { try { return localStorage.getItem(k); } catch(e) { return null; } });
+        try { w.forEach(([k, v]) => localStorage.setItem(k, JSON.stringify(v))); }
+        catch(e) { // مساحة التخزين ممتلئة: نُرجع كل شيء كما كان بدل ترك بيانات نصف مسترجعة
+          w.forEach(([k], i) => { try { if (before[i] === null) localStorage.removeItem(k); else localStorage.setItem(k, before[i]); } catch(x) {} });
+          alert(L('تعذّر الاسترجاع لأن مساحة التخزين ممتلئة، ولم يتغير شيء.', 'Restore failed because storage is full. Nothing was changed.')); return;
+        }
+        location.reload();
       };
       rd.readAsText(f); inp.value = '';
     }
@@ -1802,7 +1862,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       if (l[0] === '#') MON.push({ en: l.slice(1), items: [] });
       else if (l.trim()) { const a = l.split('|'); MON[MON.length - 1].items.push({ code: a[0], name: a[1], lines: a[2].split(';') }); }
     });
-    let mnDB = { list: [] }; try { const x = JSON.parse(localStorage.getItem(MN_KEY)); if (x && x.list) mnDB = x; } catch(e) {}
+    let mnDB = { list: [] }; (function(){ const x = loadJSON(MN_KEY); if (x === undefined) return; const n = normMonthly(x); if (n) mnDB = n; else { dataProblem = true; keepCorrupt(MN_KEY); } })();
     let mnHdr = { listNo: '', cost: 'DD - Al Nahda Road' }; try { Object.assign(mnHdr, JSON.parse(localStorage.getItem(MN_HDR_KEY)) || {}); } catch(e) {}
     let mnView = null;
     const mnSaveDB = () => { try { localStorage.setItem(MN_KEY, JSON.stringify(mnDB)); } catch(e) {} };
@@ -1869,13 +1929,13 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
     function mnRenderArch() {
       const list = mnDB.list.slice().sort((a, b) => b.id - a.id);
       $('mnArch').innerHTML = `<div style="font-weight:900;margin-bottom:6px">${L('الجرد المحفوظ','Saved counts')} (${list.length})</div>` +
-        (list.length ? list.map(x => `<div class="it"><span>${esc(x.hdr.date)} • ${esc(x.hdr.listNo || '-')}</span><button class="ss-btn ss-main" onclick="mnLoad(${x.id})">${L('فتح','Open')}</button><button class="ss-btn ss-red" onclick="mnDel(${x.id})">${L('حذف','Delete')}</button></div>`).join('')
+        (list.length ? list.map(x => `<div class="it"><span>${esc(x.hdr.date)} • ${esc(x.hdr.listNo || '-')}</span><button class="ss-btn ss-main" data-id="${esc(x.id)}" onclick="mnLoad(this.dataset.id)">${L('فتح','Open')}</button><button class="ss-btn ss-red" data-id="${esc(x.id)}" onclick="mnDel(this.dataset.id)">${L('حذف','Delete')}</button></div>`).join('')
           : `<div style="color:#64748b;font-size:12px">${L('لا يوجد جرد شهري محفوظ بعد.','No saved monthly counts yet.')}</div>`);
     }
-    function mnLoad(id) { const x = mnDB.list.find(y => y.id === id); if (!x) return; mnView = x; mnRender(); $('mnArch').style.display = 'none'; }
+    function mnLoad(id) { const x = mnDB.list.find(y => String(y.id) === String(id)); if (!x) return; mnView = x; mnRender(); $('mnArch').style.display = 'none'; }
     function mnDel(id) {
       if (!confirm(L('حذف هذا الجرد المحفوظ نهائياً؟', 'Delete this saved count permanently?'))) return;
-      mnDB.list = mnDB.list.filter(y => y.id !== id); if (mnView && mnView.id === id) mnView = null; mnSaveDB(); mnRender(); mnRenderArch();
+      mnDB.list = mnDB.list.filter(y => String(y.id) !== String(id)); if (mnView && String(mnView.id) === String(id)) mnView = null; mnSaveDB(); mnRender(); mnRenderArch();
     }
     document.addEventListener('input', e => {
       const t = e.target; if (!t.dataset || t.dataset.mh === undefined || mnView) return;
