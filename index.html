@@ -323,6 +323,13 @@ table{border-collapse:collapse}
     #mnTable tr.cat td{background:#e2e8f0;font-weight:900}
     #mnTable td.mc{font-family:ui-monospace,Menlo,monospace;white-space:nowrap;vertical-align:middle}
     #mnTable td.mv{text-align:center;font-weight:900;font-size:14px;color:#1d4ed8;min-width:70px}
+    #mnTable td.mv.ed{padding:0}
+    #mnTable td.mv input{width:100%;min-width:60px;border:0;background:transparent;text-align:center;font-weight:900;font-size:15px;color:#1d4ed8;padding:6px 2px;font-family:inherit;outline:0}
+    #mnTable td.mv input:focus{background:#dbeafe}
+    #mnTable td.mv input[readonly]{background:#f8fafc;color:#334155}
+    #mnTable .mvw{display:flex;align-items:center}
+    #mnTable .mvw input{flex:1}
+    #mnTable .mtag{font-size:10px;font-weight:800;color:#b45309;padding:0 4px}
     #mnTable .ar{font-size:11px;color:#64748b}
     @page{size:A4 portrait;margin:6mm}
     @media print{
@@ -337,6 +344,7 @@ table{border-collapse:collapse}
       #mnTable{width:100%;min-width:0;table-layout:fixed;font-size:7.5pt;border-collapse:collapse}
       #mnTable th{position:static;font-size:7.5pt;padding:.5mm 1mm}
       #mnTable td{padding:0 1mm;line-height:1.2;border:.2mm solid #888}
+      #mnTable td.mv input{font-size:7.5pt;padding:0;min-width:0;background:transparent!important;color:#000}
       #mnTable thead{display:table-header-group}
       #mnTable tr{page-break-inside:avoid}
       #mnTable th:nth-child(1){width:14%}#mnTable th:nth-child(2){width:46%}#mnTable th:nth-child(3){width:22%}#mnTable th:nth-child(4){width:18%}
@@ -505,12 +513,15 @@ table{border-collapse:collapse}
     <div class="ss-bar">
       <button class="ss-btn ss-gray" onclick="mnClose()">✕ إغلاق</button>
       <button class="ss-btn ss-gray" onclick="toggleLang()">🌐</button>
-      <button class="ss-btn ss-green" id="mnSaveBtn" onclick="mnSave()">💾 حفظ الجرد الشهري</button>
+      <button class="ss-btn ss-main" id="mnPullBtn" onclick="mnPull()"></button>
+      <button class="ss-btn ss-green" id="mnConfirmBtn" onclick="mnConfirm()" style="display:none"></button>
+      <button class="ss-btn ss-gray" id="mnUnlockBtn" onclick="mnUnconfirm()" style="display:none"></button>
       <button class="ss-btn ss-main" id="mnLiveBtn" onclick="mnToLive()" style="display:none">↩ الجرد الحالي</button>
       <button class="ss-btn ss-amber" onclick="mnToggleArch()">🗓 الجرد المحفوظ</button>
       <button class="ss-btn ss-gray" onclick="doPrint('mnModal')">طباعة / PDF</button>
       <button class="ss-btn ss-gray" onclick="ssBackup()">💾 نسخ احتياطي</button>
       <button class="ss-btn ss-gray" onclick="document.getElementById('ssRestore').click()">📂 استرجاع</button>
+      <button class="ss-btn ss-red" id="mnResetBtn" onclick="mnReset()">مسح هذه الورقة</button>
       <span id="mnStatus" style="font-size:12px;font-weight:800;color:#334155"></span>
     </div>
     <div class="ss-body">
@@ -605,7 +616,10 @@ table{border-collapse:collapse}
     }
     function normMonthly(x) {
       if (!x || typeof x !== 'object' || !Array.isArray(x.list)) return null;
-      return { list: x.list.filter(s => s && typeof s === 'object' && s.hdr && typeof s.hdr === 'object' && s.rows && typeof s.rows === 'object').map((s, i) => {
+      const rowsOf = r => { const o = {}; if (r && typeof r === 'object') Object.keys(r).forEach(k => { o[k] = Array.isArray(r[k]) ? r[k].map(str) : []; }); return o; };
+      // الجرد الشهري الجاري (مسودة لم تُحفظ نهائياً)
+      const dr = x.draft && typeof x.draft === 'object' ? { rows: rowsOf(x.draft.rows), pulled: !!x.draft.pulled, confirmed: !!x.draft.confirmed } : null;
+      return { draft: dr, list: x.list.filter(s => s && typeof s === 'object' && s.hdr && typeof s.hdr === 'object' && s.rows && typeof s.rows === 'object').map((s, i) => {
         const rows = {}; Object.keys(s.rows).forEach(k => { rows[k] = Array.isArray(s.rows[k]) ? s.rows[k].map(str) : []; });
         return { id: (typeof s.id === 'number' || SAFE_ID.test(str(s.id))) ? s.id : Date.now() + i, hdr: { date: str(s.hdr.date), listNo: str(s.hdr.listNo), cost: str(s.hdr.cost) }, rows, savedAt: str(s.savedAt) };
       }) };
@@ -1614,7 +1628,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
     function bkCheck() {
       const el = document.getElementById('bkBanner'); if (!el) return;
       let last = 0, snooze = 0; try { last = +localStorage.getItem(BK_KEY) || 0; snooze = +localStorage.getItem(BK_SNOOZE) || 0; } catch(e) {}
-      const has = localProducts.some(p => countOf(p) !== null) || Object.keys(db.sheets).some(k => hasData(db.sheets[k])) || mnDB.list.length > 0;
+      const has = localProducts.some(p => countOf(p) !== null) || Object.keys(db.sheets).some(k => hasData(db.sheets[k])) || mnDB.list.length > 0 || mnHasData(mnDB.draft);
       const days = last ? Math.floor((Date.now() - last) / 864e5) : null;
       const show = has && (days === null || days >= 7) && Date.now() > snooze;
       el.style.display = show ? 'flex' : 'none';
@@ -2023,39 +2037,83 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       MON.forEach(sec => sec.items.forEach(it => { const p = localProducts.find(x => x.code === it.code); rows[it.code] = p ? monLines(p, it.lines) : it.lines.map(() => ''); }));
       return rows;
     }
-    function mnOpen() { mnView = null; mnHdr.date = todayStr(); mnRender(); $('mnModal').style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+    /* الجرد الشهري الجاري: سحب الجرد ← تعديل الأعداد في الورقة ← تأكيد الجرد (قفل) ← حفظ نهائي.
+       بعد السحب تصبح الورقة نسخة مستقلة: التعديل فيها لا يغيّر أرصدة صفحة المنتجات. */
+    const MON_ITEM = {}; MON.forEach(sec => sec.items.forEach(it => { MON_ITEM[it.code] = it; }));
+    const mnDraft = () => mnDB.draft || (mnDB.draft = { rows: {}, pulled: false, confirmed: false });
+    const mnHasData = d => !!d && Object.values(d.rows).some(a => a.some(x => x !== ''));
+    function mnPull() {
+      const d = mnDraft(); if (d.confirmed) return;
+      if (mnHasData(d) && !confirm(L('إعادة السحب تستبدل كل الأعداد في الورقة (ومنها تعديلاتك) بأعداد صفحة المنتجات الحالية. متابعة؟',
+        'Re-pulling replaces all numbers on the sheet (including your edits) with the current product counts. Continue?'))) return;
+      d.rows = mnLive(); d.pulled = true; mnSaveDB(); mnRender();
+      const n = Object.values(d.rows).filter(a => a.some(x => x !== '')).length;
+      alert(L(`تم سحب ${n} صنف من صفحة المنتجات.\nراجع الأعداد وعدّل ما تريد في الورقة، ثم اضغط "تأكيد الجرد".`,
+        `Pulled ${n} items from the products page.\nReview and edit the numbers on the sheet, then press "Confirm count".`));
+    }
+    function mnConfirm() {
+      const d = mnDraft();
+      if (!d.confirmed) {
+        if (!mnHasData(d)) { alert(L('الورقة فارغة. اسحب الجرد أو اكتب الأعداد أولاً.', 'The sheet is empty. Pull the count or type the numbers first.')); return; }
+        if (!confirm(L('تأكيد الجرد؟ بعد التأكيد تُقفل الأعداد ولا يمكن تعديلها.', 'Confirm the count? The numbers are locked after confirming.'))) return;
+        d.confirmed = true; mnSaveDB(); mnRender(); return;
+      }
+      if (!confirm(L('حفظ نهائي؟ يُنقل الجرد إلى "الجرد المحفوظ" كنسخة ثابتة لا تتغير، وتبدأ ورقة جديدة فارغة.',
+        'Final save? The count moves to "Saved counts" as a fixed copy, and a new empty sheet starts.'))) return;
+      const snap = { id: Date.now(), hdr: { date: mnHdr.date, listNo: mnHdr.listNo, cost: mnHdr.cost }, rows: d.rows, savedAt: new Date().toISOString() };
+      mnDB.list.push(snap); mnDB.draft = null; mnSaveDB(); mnView = snap; mnRender(); mnRenderArch(); $('mnArch').style.display = 'block';
+      alert(L('تم حفظ الجرد الشهري نهائياً ✅ وهو الآن في "الجرد المحفوظ".', 'Monthly count saved ✅ It is now in "Saved counts".'));
+    }
+    // فك التأكيد بالخطأ: تعود الأعداد قابلة للتعديل كما هي، بدون مسح شيء
+    function mnUnconfirm() { const d = mnDraft(); if (!d.confirmed) return; d.confirmed = false; mnSaveDB(); mnRender(); }
+    function mnReset() {
+      if (!confirm(L('مسح كل أعداد ورقة الجرد الشهري الحالية؟ الجرد المحفوظ وصفحة المنتجات لن يتأثرا.',
+        'Clear all numbers on the current monthly sheet? Saved counts and the products page are not affected.'))) return;
+      mnDB.draft = null; mnSaveDB(); mnRender();
+    }
+    function mnStatusText(rows, v) {
+      let tot = 0, cnt = 0; MON.forEach(sec => sec.items.forEach(it => { tot++; if ((rows[it.code] || []).some(x => x !== '' && x !== undefined)) cnt++; }));
+      const d = mnDB.draft, state = v ? L('📁 جرد محفوظ', '📁 Saved count')
+        : (d && d.confirmed ? L('🔒 مؤكد — جاهز للحفظ النهائي', '🔒 Confirmed — ready for final save') : d && d.pulled ? L('📝 مسحوب — يمكن التعديل', '📝 Pulled — editable') : L('⏳ لم يُسحب بعد', '⏳ Not pulled yet'));
+      $('mnStatus').textContent = state + '  |  ' + L(`تم جرد ${cnt} من ${tot} صنف`, `${cnt} of ${tot} items counted`);
+    }
+    function mnOpen() { mnView = null; if (!mnHasData(mnDB.draft)) mnHdr.date = todayStr(); mnRender(); $('mnModal').style.display = 'flex'; document.body.style.overflow = 'hidden'; }
     function mnClose() { $('mnModal').style.display = 'none'; document.body.style.overflow = 'auto'; document.querySelectorAll('.pr-target').forEach(e => e.classList.remove('pr-target')); }
     function mnRender() {
-      const v = mnView, h = v ? v.hdr : mnHdr, rows = v ? v.rows : mnLive(), ro = v ? ' readonly' : '';
+      const v = mnView, d = v ? null : mnDraft(), h = v ? v.hdr : mnHdr, rows = v ? v.rows : d.rows, ro = v ? ' readonly' : '';
+      const edit = !v, lock = !v && d.confirmed ? ' readonly' : '';
       const f = (k, l, t) => `<div><label>${l}</label><input data-mh="${k}" type="${t||'text'}" value="${esc(h[k])}"${ro}></div>`;
       $('mnHead').innerHTML = f('date', 'Date / التاريخ', 'date') + f('listNo', 'Stock Take List / رقم القائمة') + f('cost', 'Cost Center / مركز التكلفة');
-      let html = '', tot = 0, cnt = 0;
+      let html = '';
       MON.forEach(sec => {
         html += `<tr class="cat"><td colspan="4">${esc(LANG === 'en' ? sec.en : sec.en + ' — ' + (MON_AR[sec.en] || ''))}</td></tr>`;
         sec.items.forEach(it => {
-          const vals = rows[it.code] || it.lines.map(() => ''), n = it.lines.length; tot++;
-          if (vals.some(x => x !== '' && x !== undefined)) cnt++;
+          const vals = rows[it.code] || it.lines.map(() => ''), n = it.lines.length;
           const p = localProducts.find(x => x.code === it.code);
           const ar = (LANG !== 'en' && p) ? `<div class="ar">${esc(p.name_ar)}</div>` : '';
           it.lines.forEach((ln, i) => {
+            const val = vals[i] == null ? '' : vals[i];
+            // رقم مسحوب معه وحدة (مثل "3 CTN" لصنف يُعدّ بالكرتون وسطره بالحبة): الوحدة تبقى ظاهرة وتُحفظ مع أي تعديل
+            const tg = /^([\d.]*)\s+(CTN|PKT)$/.exec(val), num = tg ? tg[1] : val, tag = tg ? tg[2] : '';
             html += '<tr>' + (i === 0 ? `<td rowspan="${n}" class="mc">${it.code}</td><td rowspan="${n}" class="mnm">${esc(it.name)}${ar}</td>` : '') +
-              `<td>${esc(ln)}</td><td class="mv">${esc(vals[i])}</td></tr>`;
+              `<td>${esc(ln)}</td>` + (edit ? `<td class="mv ed"><div class="mvw"><input data-mc="${it.code}" data-mi="${i}" data-tag="${tag}" inputmode="decimal" value="${esc(num)}"${lock}>${tag ? `<span class="mtag">${tag}</span>` : ''}</div></td>` : `<td class="mv">${esc(val)}</td>`) + '</tr>';
           });
         });
       });
       $('mnBody').innerHTML = html;
-      $('mnStatus').textContent = (v ? L('📁 جرد محفوظ — ', '📁 Saved count — ') : L('🔴 مباشر — ', '🔴 Live — ')) + L(`تم جرد ${cnt} من ${tot} صنف`, `${cnt} of ${tot} items counted`);
-      $('mnSaveBtn').style.display = v ? 'none' : ''; $('mnLiveBtn').style.display = v ? '' : 'none';
-      $('mnNote').textContent = L('الأعداد تُسحب مباشرة من صفحة المنتجات بنفس ترتيب قائمة Oracle (Stock Take List INV2610-49325)، وتعدّلها من صفحة المنتج.',
-        'Counts are pulled live from the products page in the same order as the Oracle list (Stock Take List INV2610-49325); edit them from the product page.');
+      mnStatusText(rows, v);
+      const pull = $('mnPullBtn'), cf = $('mnConfirmBtn');
+      pull.style.display = (!v && !d.confirmed) ? '' : 'none';
+      pull.textContent = (d && (d.pulled || mnHasData(d))) ? L('🔄 إعادة سحب الجرد', '🔄 Re-pull count') : L('📥 سحب الجرد', '📥 Pull count');
+      cf.style.display = (!v && mnHasData(d)) ? '' : 'none';
+      cf.textContent = d && d.confirmed ? L('💾 حفظ نهائي', '💾 Final save') : L('✔ تأكيد الجرد', '✔ Confirm count');
+      const un = $('mnUnlockBtn'); un.style.display = (!v && d.confirmed) ? '' : 'none'; un.textContent = L('🔓 فك التأكيد', '🔓 Unlock');
+      $('mnResetBtn').style.display = v ? 'none' : ''; $('mnLiveBtn').style.display = v ? '' : 'none';
+      $('mnNote').textContent = v ? L('جرد محفوظ نهائياً: للقراءة والطباعة فقط.', 'Final saved count: read and print only.')
+        : L('اضغط "سحب الجرد" لنسخ الأعداد من صفحة المنتجات بنفس ترتيب قائمة Oracle (Stock Take List INV2610-49325)، ثم عدّل ما تريد في الورقة، ثم "تأكيد الجرد" ثم "حفظ نهائي". التعديل هنا لا يغيّر أرصدة صفحة المنتجات.',
+          'Press "Pull count" to copy the numbers from the products page in the Oracle list order (Stock Take List INV2610-49325), edit what you need on the sheet, then "Confirm count" and "Final save". Editing here does not change the product page stock.');
     }
     function mnToLive() { mnView = null; mnRender(); }
-    function mnSave() {
-      if (!confirm(L('حفظ الجرد الشهري بالأعداد الحالية؟ تُحفظ نسخة ثابتة لا تتغير.', 'Save the monthly count with the current numbers? A fixed copy is stored.'))) return;
-      const snap = { id: Date.now(), hdr: { date: mnHdr.date, listNo: mnHdr.listNo, cost: mnHdr.cost }, rows: mnLive(), savedAt: new Date().toISOString() };
-      mnDB.list.push(snap); mnSaveDB(); mnView = snap; mnRender(); mnRenderArch(); $('mnArch').style.display = 'block';
-      alert(L('تم حفظ الجرد الشهري ✅', 'Monthly count saved ✅'));
-    }
     function mnToggleArch() { const a = $('mnArch'); a.style.display = a.style.display === 'block' ? 'none' : 'block'; mnRenderArch(); }
     function mnRenderArch() {
       const list = mnDB.list.slice().sort((a, b) => b.id - a.id);
@@ -2071,6 +2129,28 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
     document.addEventListener('input', e => {
       const t = e.target; if (!t.dataset || t.dataset.mh === undefined || mnView) return;
       mnHdr[t.dataset.mh] = t.value; try { localStorage.setItem(MN_HDR_KEY, JSON.stringify(mnHdr)); } catch(x) {}
+    });
+    // تعديل أعداد ورقة الجرد الشهري: أرقام فقط (مع كسر عشري لأسطر الكيلو واللتر)، والأرقام العربية تُحوَّل.
+    // أي إدخال آخر يُعلَّم بالأحمر ولا يُحفظ، ويعود للقيمة المحفوظة عند الخروج من الخانة.
+    document.addEventListener('input', e => {
+      const t = e.target; if (!t.dataset || t.dataset.mc === undefined || mnView) return;
+      const d = mnDraft(); if (d.confirmed) return;
+      // الفاصلة (, ، ٬) فاصل آلاف تُحذف: 1,000 = 1000. والفاصلة العشرية العربية ٫ تصبح نقطة
+      const v = latinDigits(t.value).replace(/٫/g, '.').replace(/[,،٬\s]/g, '');
+      if (v !== '' && !/^(\d+(\.\d*)?|\.\d*)$/.test(v)) { t.dataset.bad = '1'; t.style.background = '#fee2e2'; return; }
+      delete t.dataset.bad; t.style.background = ''; if (v !== t.value) t.value = v;
+      const it = MON_ITEM[t.dataset.mc]; if (!it) return;
+      const arr = (d.rows[it.code] || it.lines.map(() => '')).slice(); arr[+t.dataset.mi] = (v && t.dataset.tag) ? v + ' ' + t.dataset.tag : v; d.rows[it.code] = arr;
+      mnSaveDB(); mnStatusText(d.rows, null);
+      const cf = $('mnConfirmBtn'); cf.style.display = mnHasData(d) ? '' : 'none';
+    });
+    document.addEventListener('change', e => {
+      const t = e.target; if (!t.dataset || t.dataset.mc === undefined || mnView) return;
+      const d = mnDraft(), it = MON_ITEM[t.dataset.mc], tag = t.dataset.tag, saved = ((d.rows[t.dataset.mc] || [])[+t.dataset.mi]) || '';
+      if (t.dataset.bad) { t.value = tag ? saved.replace(/\s+(CTN|PKT)$/, '') : saved; delete t.dataset.bad; t.style.background = ''; return; }
+      // تنظيف الصيغ الناقصة عند الخروج: "12." ← "12"، ".5" ← "0.5"، "." ← فارغ
+      let v = t.value; if (v === '.') v = ''; else { if (v.startsWith('.')) v = '0' + v; if (v.endsWith('.')) v = v.slice(0, -1); }
+      if (it && v !== t.value) { const arr = (d.rows[it.code] || it.lines.map(() => '')).slice(); arr[+t.dataset.mi] = (v && tag) ? v + ' ' + tag : v; d.rows[it.code] = arr; t.value = v; mnSaveDB(); mnStatusText(d.rows, null); }
     });
     function doPrint(id) {
       document.querySelectorAll('.pr-target').forEach(e => e.classList.remove('pr-target'));
