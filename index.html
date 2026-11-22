@@ -2,6 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
+  <!-- سياسة أمان: الصفحة لا تحمّل ولا تتصل بأي موقع خارجي (حماية إضافية لو ظهرت ثغرة لاحقاً) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>نظام إدارة وجرد المخزون الشامل</title>
   <link rel="manifest" href="manifest.json">
@@ -1601,7 +1603,7 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
       // بدون إنترنت لا يفتح واتساب: ننسخ النص ليُرسل عند عودة الاتصال
       if (navigator.onLine === false) { copyText(t, L('لا يوجد إنترنت الآن، فنُسخ نص الورقة. الصقه في واتساب عند عودة الاتصال.', 'No internet right now, so the sheet text was copied. Paste it into WhatsApp when you are back online.'),
         L('لا يوجد إنترنت الآن. أرسل الورقة عند عودة الاتصال.', 'No internet right now. Send the sheet when you are back online.')); return; }
-      window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank');
+      window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank', 'noopener'); // noopener: الصفحة المفتوحة لا تتحكم بصفحة التطبيق
     }
     // حفظ ملف النسخة الاحتياطية على الجهاز (يعمل بدون إنترنت):
     // الجوال: نافذة المشاركة وفيها "حفظ في الملفات" أو Drive أو واتساب. وإلا: تنزيل مباشر إلى التنزيلات.
@@ -1639,6 +1641,8 @@ COF-000013|كبسولات قهوة إسبريسو لايت روست (10 كبسو
     function bkDismiss() { try { localStorage.setItem(BK_SNOOZE, String(Date.now() + 864e5)); } catch(e) {} bkCheck(); }
     function ssRestore(inp) {
       const f = inp.files && inp.files[0]; if (!f) return;
+      // ملف أكبر من 15 ميجا لا يمكن أن يكون نسخة من هذا التطبيق (مساحة التخزين نفسها أصغر)، وقراءته قد تجمّد الجوال
+      if (f.size > 15 * 1024 * 1024) { inp.value = ''; alert(L('الملف كبير جداً ولا يمكن أن يكون نسخة احتياطية من هذا التطبيق. لم يتغير شيء.', 'The file is too large to be a backup of this app. Nothing was changed.')); return; }
       const rd = new FileReader();
       rd.onload = () => {
         // تحقق كامل قبل الكتابة: ملف تالف أو معدّل لا يجب أن يوقف التطبيق أو يُدخل كوداً فيه
